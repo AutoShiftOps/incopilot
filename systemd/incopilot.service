@@ -1,0 +1,17 @@
+[Unit]
+Description=AI Incident Copilot — scheduled log analysis
+After=network.target
+
+[Service]
+Type=oneshot
+User=YOUR_USER
+WorkingDirectory=/opt/incopilot
+ExecStart=/opt/incopilot/.venv/bin/python -m incopilot bundle \
+  --unit nginx \
+  --container my-api \
+  --since-journal "10 min ago" \
+  --since-docker 10m \
+  --out-dir /var/log/incopilot
+
+[Install]
+WantedBy=multi-user.target

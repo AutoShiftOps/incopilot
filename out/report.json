@@ -1,0 +1,54 @@
+{
+  "meta": {
+    "generated_at": "2026-04-12 03:33:26 UTC",
+    "source": "docker",
+    "target": "pedantic_edison",
+    "since": "1h"
+  },
+  "golden_signals": {},
+  "findings": {},
+  "top_repeating_lines": [],
+  "suggestions": [
+    "No strong pattern. Start with baseline host signals (CPU/mem/disk/IO), then narrow by service logs.",
+    "Run the safe next-commands checklist below (non-destructive)."
+  ],
+  "safe_next_commands": [
+    {
+      "title": "Confirm service logs (recent)",
+      "cmd": "journalctl -u <service> --since '30 min ago' --no-pager | tail -200"
+    },
+    {
+      "title": "Follow service logs live",
+      "cmd": "journalctl -u <service> -f"
+    },
+    {
+      "title": "Top CPU processes",
+      "cmd": "ps aux --sort=-%cpu | head -15"
+    },
+    {
+      "title": "Memory overview",
+      "cmd": "free -h"
+    },
+    {
+      "title": "Disk usage",
+      "cmd": "df -h"
+    },
+    {
+      "title": "Disk I/O saturation",
+      "cmd": "iostat -x 1 3"
+    },
+    {
+      "title": "Listening ports",
+      "cmd": "ss -tuln"
+    },
+    {
+      "title": "Docker container resource snapshot",
+      "cmd": "docker stats --no-stream"
+    },
+    {
+      "title": "Docker container logs (last hour)",
+      "cmd": "docker logs --since 1h <container>"
+    }
+  ],
+  "safety_note": "Suggestions only \u2014 no destructive actions"
+}
