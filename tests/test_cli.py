@@ -1,6 +1,7 @@
 """Tests for CLI interface."""
 import pytest
 from click.testing import CliRunner
+
 from incopilot.cli import cli
 
 
