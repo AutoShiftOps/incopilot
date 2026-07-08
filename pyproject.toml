@@ -5,9 +5,119 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "incopilot"
 version = "0.1.0"
-description = "AI Incident Copilot CLI"
+description = "A practical incident-triage CLI agent"
+readme = "README.md"
 requires-python = ">=3.10"
 dependencies = ["rich==13.9.4"]
+authors = [
+    {name = "AutoShiftOps", email = "maintainers@autoshiftops.com"}
+]
+maintainers = [
+    {name = "AutoShiftOps", email = "maintainers@autoshiftops.com"}
+]
+license = {text = "MIT"}
+keywords = ["incident", "triage", "cli", "devops", "monitoring", "logs", "incident-response"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "Intended Audience :: System Administrators",
+    "License :: OSI Approved :: MIT License",
+    "Natural Language :: English",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: System :: Monitoring",
+    "Topic :: System :: Logging",
+    "Topic :: System :: Systems Administration",
+]
+
+[project.urls]
+Homepage = "https://github.com/AutoShiftOps/incopilot"
+Documentation = "https://github.com/AutoShiftOps/incopilot#readme"
+Repository = "https://github.com/AutoShiftOps/incopilot.git"
+Issues = "https://github.com/AutoShiftOps/incopilot/issues"
+Changelog = "https://github.com/AutoShiftOps/incopilot/blob/main/CHANGELOG.md"
+Security = "https://github.com/AutoShiftOps/incopilot/blob/main/SECURITY.md"
 
 [project.scripts]
 incopilot = "incopilot.cli:main"
+
+[tool.setuptools]
+packages = ["incopilot"]
+
+[tool.black]
+line-length = 88
+target-version = ['py310', 'py311', 'py312']
+include = '\.pyi?$'
+extend-exclude = '''
+/(\
+  \.eggs\
+  | \.git\
+  | \.hg\
+  | \.mypy_cache\
+  | \.tox\
+  | \.venv\
+  | build\
+  | dist\
+)/
+'''
+
+[tool.isort]
+profile = "black"
+line_length = 88
+multi_line_mode = 3
+include_trailing_comma = true
+force_grid_wrap = 0
+use_parentheses = true
+ensure_newline_before_comments = true
+indent = 4
+known_first_party = ["incopilot"]
+known_third_party = ["click", "rich"]
+
+[tool.pytest.ini_options]
+minversion = "7.0"
+testpaths = ["tests"]
+python_files = "test_*.py"
+python_classes = "Test*"
+python_functions = "test_*"
+addopts = "-v --strict-markers --tb=short"
+markers = [
+    "unit: Unit tests",
+    "integration: Integration tests",
+    "slow: Slow running tests",
+]
+
+[tool.coverage.run]
+branch = true
+source = ["incopilot"]
+omit = [
+    "*/tests/*",
+    "*/site-packages/*",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+    "if TYPE_CHECKING:",
+    "@abstractmethod",
+]
+
+[tool.pylint.messages_control]
+disable = [
+    "C0111",
+    "C0103",
+    "C0301",
+]
+
+[tool.pylint.format]
+max-line-length = 88
+
+[tool.pylint.design]
+max-args = 5
