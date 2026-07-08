@@ -1,5 +1,4 @@
 """Tests for report generation."""
-import pytest
 import json
 
 

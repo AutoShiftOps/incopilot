@@ -1,5 +1,4 @@
 """Tests for log collectors."""
-import pytest
 
 
 class TestFileCollector:

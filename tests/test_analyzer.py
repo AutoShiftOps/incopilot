@@ -1,5 +1,4 @@
 """Tests for log analysis."""
-import pytest
 
 
 class TestAnalyzer:
