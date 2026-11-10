@@ -41,16 +41,14 @@ Before creating a bug report, please check the issue list to see if the bug has 
    ```bash
    python -m venv .venv
    source .venv/bin/activate
-   pip install -r requirements.txt
-   pip install -r requirements-dev.txt
+   pip install -e ".[dev]"
    ```
 
 3. **Make your changes** and write tests:
    ```bash
-   pytest
-   black incopilot tests
-   isort incopilot tests
-   flake8 incopilot tests
+   pytest --cov
+   ruff check .
+   bandit -q -r incopilot
    ```
 
 4. **Commit with clear messages:**
@@ -68,18 +66,24 @@ Before creating a bug report, please check the issue list to see if the bug has 
 - Write tests for all new features and bug fixes
 - Tests should be in `tests/` directory
 - Run tests with `pytest`
-- Aim for >80% code coverage
+- Coverage must stay above 85% (CI enforces this)
 
 ```bash
-pytest --cov=incopilot tests/
+pytest --cov
 ```
 
 ### Code Style
 
-- **Code formatting:** Black (line length: 88)
-- **Import sorting:** isort
-- **Linting:** flake8
-- **Security:** bandit
+- **Linting and import order:** ruff (line length: 120)
+- **Security:** bandit, plus ruff's `S` rules
+
+### Design rules
+
+- **Read-only.** Collectors only read. Suggested commands must not change state; a test enforces this.
+- **No shell.** External tools run with an argument list, and user-supplied values are validated.
+- **Redact before anything leaves the process.** Reports and AI prompts only ever see redacted text.
+- **AI is optional.** Every feature must work with no key and no network.
+- **New patterns need two tests:** a line that should match and a similar line that should not.
 
 ## License
 

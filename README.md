@@ -1,213 +1,177 @@
-# 🚨 incopilot — AI-Powered Incident Triage CLI
+# incopilot
 
-![backend](https://img.shields.io/badge/backend-Python-3776AB?logo=python&logoColor=white)
-![cli](https://img.shields.io/badge/cli-Click-brightgreen?logo=gnometerminal&logoColor=white)
-![sources](https://img.shields.io/badge/sources-journalctl%20%7C%20Docker%20%7C%20File-blueviolet)
+Read-only incident triage for logs. One command collects logs from **systemd, Docker, Kubernetes or a file**, maps what it finds to the **Four Golden Signals**, and writes a report with the order things went wrong and safe checks to run next.
+
+[![CI](https://github.com/AutoShiftOps/incopilot/actions/workflows/ci.yml/badge.svg)](https://github.com/AutoShiftOps/incopilot/actions/workflows/ci.yml)
+![python](https://img.shields.io/badge/python-3.10%E2%80%933.13-3776AB)
 ![license](https://img.shields.io/badge/license-MIT-blue)
-![status](https://img.shields.io/badge/status-live-brightgreen)
 
-> Run one command during an incident. Get instant log collection, pattern extraction,
-> Four Golden Signal mapping, and a structured report — from **systemd journal**, **Docker**, or any log file.
->
-> **No SaaS. No dashboard. No database connection. Just your terminal.**
+**Correlate and explain, never auto-act.** incopilot never changes the systems it reads. It works offline with no account and no agent. An AI hypothesis is available if you bring your own key, and it is off by default.
 
----
+Website: https://autoshiftops.github.io/incopilot/
 
-## What It Does
-
-incopilot automates the first-response pass that every on-call engineer repeats manually:
-
-1. **Collect** — pulls recent logs from `journalctl`, `docker logs`, or a plain log file for a configurable time window
-2. **Extract** — identifies high-signal lines: errors, warnings, timeouts, OOMs, restarts, connection failures
-3. **Map** — classifies findings against the **Four Golden Signals** (Latency · Traffic · Errors · Saturation)
-4. **Report** — writes `out/report.md` (human-readable) and `out/report.json` (automation-ready) with copy/pasteable next steps
-
----
-
-## Features
-
-- 📥 **3 Log Sources** — `journalctl` (systemd), `docker logs`, plain log file path
-- 🗺️ **Four Golden Signals** — auto-maps log patterns to Latency, Traffic, Errors, Saturation
-- 📋 **Dual Output** — `report.md` for humans, `report.json` for pipelines and alerting tools
-- ⚡ **Single Command** — one CLI invocation covers collection, analysis, and reporting
-- 🔀 **Bundle Mode** — analyze journal + Docker container together in one run
-- 🔒 **Safe by Design** — suggestions only, no destructive actions ever executed
-- 🐍 **Pure Python** — no agents, no cloud APIs, no external services required
-
----
-
-## Live CLI
+## Quick start
 
 ```bash
-# systemd journal — last 30 minutes of nginx
-python -m incopilot journal --unit nginx --since "30 min ago"
+pip install git+https://github.com/AutoShiftOps/incopilot
 
-# Docker container — last 1 hour
-python -m incopilot docker --container my-api --since 1h
-
-# Both sources together (bundle mode)
-python -m incopilot bundle \
-  --unit nginx \
-  --container my-api \
-  --since-journal "30 min ago" \
-  --since-docker 1h
-
-# Plain log file
-python -m incopilot file --path ./sample.log
-```
-
-**Outputs written to:**
-```
-out/report.md    ← structured incident summary (copy/pasteable)
-out/report.json  ← machine-readable for pipelines and alerting
-```
-
-### Example Report Output
-
-```markdown
-## Incident Summary
-- Time range:            last 30 min
-- Sources analyzed:      nginx (journalctl)
-- Total lines collected: 1,842
-- High-signal lines:     37
-
-## Four Golden Signals
-- 🔴 Errors       — 24 occurrences  (upstream connect error, 502 Bad Gateway)
-- 🟡 Latency      — 8 occurrences   (upstream response time > 2s)
-- 🟢 Traffic      — nominal
-- 🟢 Saturation   — nominal
-
-## Top Recurring Patterns
-1. "upstream connect error or disconnect/reset"           — 18x
-2. "recv() failed (104: Connection reset by peer)"        — 6x
-
-## Suggested Next Steps
-- Check upstream service health: systemctl status my-api
-- Tail live logs:                journalctl -u nginx -f
-- Review upstream timeout config in nginx.conf
-```
-
----
-
-## Architecture
-
-```
-Terminal (CLI)
-│
-│  python -m incopilot journal | docker | bundle | file
-│
-└──► cli.py  (Click CLI entrypoint)
-          │
-          ├──► collectors.py      ← journalctl / docker logs / file reader
-          │         │
-          │         └── raw log lines (time-windowed)
-          │
-          ├──► analyzer.py        ← pattern extraction + Four Golden Signal mapping
-          │         │
-          │         └── findings[]  {signal, pattern, count, severity}
-          │
-          └──► reporter.py        ← renders report.md + report.json
-                    │
-                    └── out/report.md
-                        out/report.json
-```
-
-**Stack:**
-- Language: Python 3.10+
-- CLI: [Click](https://click.palletsprojects.com/)
-- Log sources: `subprocess` → `journalctl`, `docker logs`
-- Config: `config.py` / `config_extended.py`
-- Output: Markdown + JSON (stdlib only, zero external dependencies for reporting)
-
----
-
-## Run Locally
-
-**Prerequisites:** Python 3.10+, `journalctl` and/or Docker CLI available on your system
-
-```bash
-# Clone
-git clone https://github.com/AutoShiftOps/incopilot
-cd incopilot
-
-# Install
-python -m venv .venv
-source .venv/bin/activate        # Windows: .venv\Scripts\activate
-pip install -r requirements.txt
-
-# Run
-python -m incopilot journal --unit nginx --since "30 min ago"
-
-# View report
+# try it on the bundled example incident
+git clone https://github.com/AutoShiftOps/incopilot && cd incopilot
+incopilot file --path examples/checkout-incident.log --packs core,nginx
 cat out/report.md
 ```
 
----
+```text
+Overall severity: CRITICAL
+15 lines analyzed, 13 matched, 2 filtered as noise
 
-## Project Structure
-
-```
-incopilot/
-├── incopilot/
-│   ├── __main__.py          # Entry point  (python -m incopilot)
-│   ├── cli.py               # Click CLI — subcommands: journal, docker, bundle, file
-│   ├── collectors.py        # Log collectors — journalctl, docker logs, file reader
-│   ├── analyzer.py          # Pattern extraction + Four Golden Signal classifier
-│   ├── reporter.py          # report.md + report.json writer
-│   ├── config.py            # Base configuration (time window, line limits)
-│   └── config_extended.py   # Extended config (custom patterns, signal overrides)
-├── out/                     # Generated reports (git-ignored)
-├── scripts/                 # Helper scripts
-├── systemd/                 # Systemd service/timer unit examples
-├── requirements.txt
-├── pyproject.toml
-└── README.md
+ Finding                    Signal      Severity  Count
+ Out of memory              saturation  critical      1
+ HTTP 5xx responses         errors      high          5
+ Timeouts                   latency     high          4
+ Connection limit reached   saturation  high          2
+ ...
+First to appear: Slow operations
 ```
 
----
+The report shows that slow queries came first, then the connection pool filled, then timeouts and 5xx, and the out-of-memory kill came last. That ordering is the point: the loudest error is often not the cause.
 
-## Configuration
-
-| Flag | Default | Description |
-|---|---|---|
-| `--since` | `30 min ago` | Time window for journal / docker sources |
-| `--unit` | — | systemd unit name (e.g. `nginx`, `postgresql`) |
-| `--container` | — | Docker container name or ID |
-| `--path` | — | Path to a plain log file |
-| `--since-journal` | `30 min ago` | Journal time window in bundle mode |
-| `--since-docker` | `1h` | Docker time window in bundle mode |
-
-Custom pattern overrides and signal classification rules can be set in `incopilot/config_extended.py`.
-
----
-
-## Roadmap
-
-- [ ] AI layer — LLM-powered root cause hypothesis (HuggingFace / OpenAI)
-- [ ] Kubernetes pod logs source (`kubectl logs`)
-- [ ] Slack / PagerDuty webhook output
-- [ ] GitHub Action: `incopilot-triage` for automated post-deploy checks
-- [ ] Interactive TUI mode (Rich)
-- [ ] Schema-aware log parsing (structured JSON logs)
-
----
-
-## Contributing
-
-Issues and PRs welcome. Please open an issue before submitting a large change.
+## Sources
 
 ```bash
-git checkout -b feature/your-feature
-# make changes
-git commit -m "feat: describe your change"
-git push origin feature/your-feature
-# open a pull request
+# systemd journal
+incopilot journal --unit nginx --since "30 min ago"
+
+# Docker container (stdout and stderr)
+incopilot docker --container my-api --since 1h
+
+# Kubernetes: a pod, a workload, or a label selector
+incopilot k8s --pod deploy/api -n prod --since 30m
+incopilot k8s -l app=api -n prod --previous        # the container that just crashed
+
+# a file, a .gz file, or stdin
+incopilot file --path /var/log/app.log
+kubectl logs deploy/api | incopilot file --path -
+
+# several sources as one timeline
+incopilot bundle --unit nginx --container my-api --pod deploy/api -n prod
 ```
 
----
+## What you get
+
+`out/report.md` for people and `out/report.json` for pipelines, containing:
+
+- **Overall severity** (none, low, medium, high, critical) and a severity per finding
+- **Four Golden Signals**: which of latency, traffic, errors and saturation are affected
+- **Order of first appearance**: which pattern showed up first
+- **Read-only checks to run next**, filled in with your unit, container or pod
+- **Top repeating lines**, with timestamps, IDs and IPs normalized so repeats group together
+- **Redacted examples** for every finding
+
+Plain text, JSON lines, logfmt and `kubectl --prefix --timestamps` output are all understood. Health-check lines are filtered unless they report an error.
+
+## Options
+
+Options go after the source, for example `incopilot file --path app.log --json`.
+
+| Option | Purpose |
+|---|---|
+| `--packs core,nginx` | Pattern packs: `core`, `nginx`, `postgres`, `node`, `kubernetes`, `jvm`, `all`. Default `core` |
+| `--config FILE` | Settings file. `./incopilot.toml` is loaded automatically if present |
+| `--out-dir DIR` | Where reports are written. Default `out` |
+| `--json` | Print the JSON report to stdout and nothing else |
+| `--no-write`, `-q` | Skip report files; no console output |
+| `--fail-on LEVEL` | Exit `3` when overall severity is at or above `low`, `medium`, `high` or `critical` |
+| `--max-bytes N` | Analyze only the last N bytes. Default 5,000,000 |
+| `--timeout N` | Seconds to wait for `journalctl`, `docker` or `kubectl`. Default 60 |
+| `--no-redact`, `--redact-ips` | Turn secret masking off; also mask IPv4 addresses |
+| `--ai`, `--ai-provider`, `--ai-model` | Optional AI hypothesis, see below |
+
+Exit codes: `0` success, `1` could not collect or write, `2` usage error, `3` `--fail-on` threshold met.
+
+## Use it in CI or on a timer
+
+```bash
+# fail a post-deploy check if the new pods log anything high or critical
+incopilot k8s -l app=api -n prod --since 10m --fail-on high --quiet
+```
+
+`systemd/` has an example service and timer for scheduled runs. A `Dockerfile` is included for piping logs through a container:
+
+```bash
+docker build -t incopilot .
+kubectl logs deploy/api | docker run --rm -i incopilot file --path - --json --no-write
+```
+
+## Your own patterns
+
+Copy `examples/incopilot.toml` to `./incopilot.toml`:
+
+```toml
+packs = ["core", "postgres"]
+
+[[patterns]]
+key = "ledger_mismatch"
+regex = "ledger mismatch"
+signal = "errors"        # latency | traffic | errors | saturation
+severity = "critical"    # low | medium | high | critical
+title = "Ledger mismatch"
+advice = "Compare the ledger totals for the affected account before retrying."
+```
+
+The same file can replace the noise filter and add redaction rules.
+
+## Optional AI hypothesis
+
+```bash
+export ANTHROPIC_API_KEY=...                       # or OPENAI_API_KEY
+incopilot k8s --pod deploy/api -n prod --ai
+
+# any OpenAI-compatible endpoint, or a local model with no key at all
+incopilot file --path app.log --ai --ai-provider ollama --ai-model llama3.1
+```
+
+- **Off by default.** Without `--ai`, nothing leaves your machine.
+- **Only the redacted summary is sent**: counts, order of appearance, up to two redacted example lines per finding, and the top repeating lines. Never the raw log, and never anything with `--no-redact`.
+- **The answer is text for you to read.** It is labeled unverified in the report and nothing in it is executed.
+- **Log content is treated as untrusted** in the prompt, so text inside a log line cannot give the model instructions.
+- If the call fails, the rest of the report is still produced.
+
+Environment: `ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, or `INCOPILOT_AI_KEY`; `INCOPILOT_AI_PROVIDER`, `INCOPILOT_AI_MODEL`, `INCOPILOT_AI_BASE_URL`.
+
+Redaction is pattern-based and cannot promise to catch every secret. See [SECURITY.md](SECURITY.md).
+
+## How it works
+
+```text
+cli.py ── collectors.py   journalctl / docker logs / kubectl logs / file  (read-only, no shell)
+       ── parsing.py      plain text, JSON lines, logfmt, kubectl prefixes → events
+       ── analyzer.py     patterns → findings, severity, golden signals, order of appearance
+       ── redact.py       masks secrets before anything is written or sent
+       ── ai.py           optional hypothesis from the redacted summary (stdlib HTTP, no SDK)
+       ── reporter.py     report.md + report.json
+       ── patterns.py     built-in packs      settings.py   incopilot.toml
+```
+
+One runtime dependency (`rich`). Python 3.10 to 3.13.
+
+## Development
+
+```bash
+pip install -e ".[dev]"
+pytest --cov        # 108 tests
+ruff check .
+bandit -q -r incopilot
+```
+
+See [CONTRIBUTING.md](CONTRIBUTING.md). Issues and pull requests are welcome.
+
+## Limits
+
+- Detection is rule-based. It recognizes known failure signatures; it does not understand your application.
+- Order of appearance is a lead, not proof of cause.
+- It reads logs only. It does not look at metrics, traces or deploy history.
 
 ## License
 
 MIT © 2026 [AutoShiftOps](https://github.com/AutoShiftOps)
-
-Built by [Sudhakar Sajja](https://github.com/AutoShiftOps) — Application Architect, TechMahindra

@@ -1,0 +1,17 @@
+2026-03-01T09:40:02Z INFO  [api] GET /healthz 200 1ms
+2026-03-01T09:40:58Z INFO  [api] deploy 4f2a91c live, pool_size=10
+2026-03-01T09:41:07Z WARN  [api] slow query took longer than 2000ms: SELECT * FROM orders WHERE customer_id=88231
+2026-03-01T09:41:12Z ERROR [api] connection pool exhausted (10/10 in use), waiting
+2026-03-01T09:41:12Z ERROR [api] connection pool exhausted (10/10 in use), waiting
+2026-03-01T09:41:13Z ERROR [api] db connect timeout after 5000ms postgres://checkout:S3cr3tPass@db.internal:5432/orders
+{"ts":"2026-03-01T09:41:14Z","level":"error","msg":"request failed","status":503,"path":"/api/checkout","error":"upstream timed out"}
+{"ts":"2026-03-01T09:41:14Z","level":"error","msg":"request failed","status":503,"path":"/api/checkout","error":"upstream timed out"}
+{"ts":"2026-03-01T09:41:15Z","level":"error","msg":"request failed","status":500,"path":"/api/cart","error":"upstream timed out"}
+2026-03-01T09:41:15Z ERROR [nginx] 10.0.3.17 "POST /api/checkout HTTP/1.1" 502 157 "-" "Mozilla/5.0"
+2026-03-01T09:41:16Z ERROR [nginx] 10.0.3.22 "POST /api/checkout HTTP/1.1" 502 157 "-" "Mozilla/5.0"
+2026-03-01T09:41:17Z WARN  [api] retrying payment call, Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMjM0NTYifQ.abcDEF123456ghiJKL
+2026-03-01T09:41:20Z WARN  [api] 429 too many requests from client 10.0.3.17, rate limit exceeded
+2026-03-01T09:41:31Z ERROR [kernel] Out of memory: Killed process 4321 (python3) total-vm:2097152kB
+2026-03-01T09:41:33Z WARN  [docker] restarting container checkout-api due to failure
+2026-03-01T09:41:40Z ERROR [api] connect() failed (111: Connection refused) while connecting to db.internal
+2026-03-01T09:41:52Z INFO  [api] GET /healthz 200 1ms

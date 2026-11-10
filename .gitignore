@@ -39,4 +39,8 @@ venv/
 ENV/
 env/
 venv.bak/
-.git/
+.git/out/
+.coverage
+.pytest_cache/
+.ruff_cache/
+!examples/*.log
