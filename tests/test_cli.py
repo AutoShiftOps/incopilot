@@ -21,6 +21,9 @@ def test_file_run_writes_reports(example_log, tmp_path, capsys):
     assert cli.run(["file", "--path", str(example_log)]) == cli.EXIT_OK
     out = capsys.readouterr().out
     assert "CRITICAL" in out and "First to appear: Slow operations" in out
+    assert "Golden signals:" in out and "saturation critical" in out
+    assert "Order of first appearance" in out and "09:41:07" in out
+    assert out.index("Slow operations", out.index("Order of first appearance")) < out.rindex("Out of memory")
     report = json.loads((tmp_path / "out" / "report.json").read_text())
     assert report["severity"] == "critical" and report["stats"]["truncated"] is False
     assert "S3cr3tPass" not in (tmp_path / "out" / "report.md").read_text()

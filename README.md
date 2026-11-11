@@ -36,6 +36,19 @@ First to appear: Slow operations
 
 The report shows that slow queries came first, then the connection pool filled, then timeouts and 5xx, and the out-of-memory kill came last. That ordering is the point: the loudest error is often not the cause.
 
+## See it as a dashboard
+
+```bash
+incopilot file --path examples/checkout-incident.log --html
+# open out/report.html in a browser
+```
+
+`--html` writes a self-contained `report.html`: overall severity, the Four Golden Signals, a timeline of when each problem first appeared, findings, and the checks to run next. Nothing is loaded from a server and the report data stays in the file.
+
+The terminal output already shows severity, golden signals, findings and the order of first appearance. Use `--html` when you need to share the result with people who were not at the terminal, for example in an incident channel or a postmortem.
+
+A [live example](https://autoshiftops.github.io/incopilot/viewer.html) is on the website.
+
 ## Sources
 
 ```bash
@@ -59,7 +72,7 @@ incopilot bundle --unit nginx --container my-api --pod deploy/api -n prod
 
 ## What you get
 
-`out/report.md` for people and `out/report.json` for pipelines, containing:
+`out/report.md` for people and `out/report.json` for pipelines (plus `out/report.html` with `--html`), containing:
 
 - **Overall severity** (none, low, medium, high, critical) and a severity per finding
 - **Four Golden Signals**: which of latency, traffic, errors and saturation are affected
@@ -79,6 +92,7 @@ Options go after the source, for example `incopilot file --path app.log --json`.
 | `--packs core,nginx` | Pattern packs: `core`, `nginx`, `postgres`, `node`, `kubernetes`, `jvm`, `all`. Default `core` |
 | `--config FILE` | Settings file. `./incopilot.toml` is loaded automatically if present |
 | `--out-dir DIR` | Where reports are written. Default `out` |
+| `--html` | Also write `report.html`, a self-contained dashboard |
 | `--json` | Print the JSON report to stdout and nothing else |
 | `--no-write`, `-q` | Skip report files; no console output |
 | `--fail-on LEVEL` | Exit `3` when overall severity is at or above `low`, `medium`, `high` or `critical` |
@@ -150,6 +164,7 @@ cli.py ── collectors.py   journalctl / docker logs / kubectl logs / file  (r
        ── redact.py       masks secrets before anything is written or sent
        ── ai.py           optional hypothesis from the redacted summary (stdlib HTTP, no SDK)
        ── reporter.py     report.md + report.json
+       ── html.py         report.html: the viewer page with the report embedded
        ── patterns.py     built-in packs      settings.py   incopilot.toml
 ```
 
@@ -159,12 +174,25 @@ One runtime dependency (`rich`). Python 3.10 to 3.13.
 
 ```bash
 pip install -e ".[dev]"
-pytest --cov        # 108 tests
+pytest --cov
 ruff check .
 bandit -q -r incopilot
 ```
 
 See [CONTRIBUTING.md](CONTRIBUTING.md). Issues and pull requests are welcome.
+
+## Website
+
+`site/` holds the landing page and the report viewer as plain HTML with no build step.
+
+- **GitHub Pages:** the `Website` workflow deploys `site/` on every push to `main`. Turn Pages on once under Settings, Pages, with GitHub Actions as the source.
+- **Vercel or Netlify:** import the repo, set the root directory to `site`, and leave the build command empty.
+
+`site/viewer.html` and `incopilot/viewer.html` are the same file; a test keeps them identical.
+
+## Roadmap
+
+See [ROADMAP.md](ROADMAP.md) for the phases and [docs/PRODUCT_PLAN.md](docs/PRODUCT_PLAN.md) for the reasoning. Work is tracked in [issues](https://github.com/AutoShiftOps/incopilot/issues) by [milestone](https://github.com/AutoShiftOps/incopilot/milestones).
 
 ## Limits
 

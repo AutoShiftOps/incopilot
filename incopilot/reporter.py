@@ -177,11 +177,16 @@ def build_report_json(meta: dict, analysis: Analysis, commands, ai: AIResult | N
     }
 
 
-def write_outputs(out_dir: str, markdown: str, report: dict) -> dict[str, str]:
-    """Write report.md and report.json into out_dir."""
+def write_outputs(out_dir: str, markdown: str, report: dict, html: str | None = None) -> dict[str, str]:
+    """Write report.md and report.json (and report.html when given) into out_dir."""
     out = Path(out_dir)
     out.mkdir(parents=True, exist_ok=True)
     md_path, js_path = out / "report.md", out / "report.json"
     md_path.write_text(markdown, encoding="utf-8")
     js_path.write_text(json.dumps(report, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
-    return {"report_md": str(md_path), "report_json": str(js_path)}
+    paths = {"report_md": str(md_path), "report_json": str(js_path)}
+    if html is not None:
+        html_path = out / "report.html"
+        html_path.write_text(html, encoding="utf-8")
+        paths["report_html"] = str(html_path)
+    return paths
