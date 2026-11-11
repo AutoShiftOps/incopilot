@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- `--html` writes a self-contained `report.html` dashboard
+- Terminal output shows the golden-signals summary and an order-of-first-appearance table
+- Example report on the website at `site/viewer.html`
+- `ROADMAP.md` and `docs/PRODUCT_PLAN.md`
+
 ## [0.2.0] - 2026-11-10
 
 ### Added

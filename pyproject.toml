@@ -39,6 +39,9 @@ incopilot = "incopilot.cli:main"
 [tool.setuptools]
 packages = ["incopilot"]
 
+[tool.setuptools.package-data]
+incopilot = ["viewer.html"]
+
 [tool.setuptools.dynamic]
 version = { attr = "incopilot.__version__" }
 

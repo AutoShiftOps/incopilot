@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import sys
 
 from rich.console import Console
@@ -12,11 +13,24 @@ from rich.text import Text
 
 from . import __version__, ai, collectors, settings
 from .analyzer import Analysis, analyze
+from .html import render_html
 from .patterns import PACKS, SEVERITY_RANK, resolve_packs
 from .redact import Redactor
 from .reporter import build_meta, build_report_json, build_report_md, safe_next_commands, write_outputs
 
 EXIT_OK, EXIT_ERROR, EXIT_THRESHOLD = 0, 1, 3
+TIMELINE_ROWS = 10
+_CLOCK = re.compile(r"\d{2}:\d{2}:\d{2}")
+
+
+def _clock(ts: str | None) -> str:
+    """Show the time of day from a timestamp, or the raw value if it has none."""
+    if not ts:
+        return "n/a"
+    m = _CLOCK.search(ts)
+    return m.group(0) if m else ts
+
+
 _STYLE = {"critical": "bold red", "high": "red", "medium": "yellow", "low": "cyan", "none": "green"}
 
 
@@ -26,6 +40,8 @@ def build_parser() -> argparse.ArgumentParser:
     g = common.add_argument_group("output")
     g.add_argument("--out-dir", default="out", help="directory for report.md and report.json (default: out)")
     g.add_argument("--no-write", action="store_true", help="do not write report files")
+    g.add_argument("--html", action="store_true",
+                   help="also write report.html, a self-contained dashboard you can open in a browser")
     g.add_argument("--json", action="store_true", help="print the JSON report to stdout and nothing else")
     g.add_argument("-q", "--quiet", action="store_true", help="no console output")
     g.add_argument("--fail-on", choices=["low", "medium", "high", "critical"],
@@ -148,8 +164,25 @@ def render(console: Console, analysis: Analysis, ai_result, paths) -> None:
         for f in analysis.findings.values():
             table.add_row(Text(f.title), f.signal, Text(f.severity, style=_STYLE[f.severity]), str(f.count))
         console.print(table)
+        if analysis.signals:
+            line = Text("Golden signals: ")
+            for i, (sig, keys) in enumerate(analysis.signals.items()):
+                worst = analysis.findings[keys[0]].severity
+                line.append(", " if i else "")
+                line.append(f"{sig} ")
+                line.append(worst, style=_STYLE[worst])
+            console.print(line)
         if len(analysis.order) > 1:
             first = analysis.findings[analysis.order[0]]
+            timeline = Table(title="Order of first appearance", title_justify="left")
+            for col in ("#", "First seen", "Finding", "Signal"):
+                timeline.add_column(col)
+            for i, key in enumerate(analysis.order[:TIMELINE_ROWS], 1):
+                f = analysis.findings[key]
+                timeline.add_row(str(i), Text(_clock(f.first_seen)), Text(f.title), f.signal)
+            console.print(timeline)
+            if len(analysis.order) > TIMELINE_ROWS:
+                console.print(f"... and {len(analysis.order) - TIMELINE_ROWS} more in the report", highlight=False)
             console.print(Text(f"First to appear: {first.title}"))
     else:
         console.print("No known failure pattern matched.")
@@ -157,7 +190,7 @@ def render(console: Console, analysis: Analysis, ai_result, paths) -> None:
         console.print("\n[bold]AI hypothesis (unverified)[/bold]")
         console.print(Text(ai_result.text or f"Not available: {ai_result.error}"))
     if paths:
-        console.print(Text(f"\nSaved: {paths['report_md']} and {paths['report_json']}"))
+        console.print(Text("\nSaved: " + ", ".join(paths.values())))
 
 
 def run(argv=None) -> int:
@@ -193,7 +226,8 @@ def run(argv=None) -> int:
     paths = None
     if not args.no_write:
         try:
-            paths = write_outputs(args.out_dir, build_report_md(meta, analysis, commands, ai_result), report)
+            paths = write_outputs(args.out_dir, build_report_md(meta, analysis, commands, ai_result), report,
+                                  render_html(report) if args.html else None)
         except OSError as exc:
             err.print(Text(f"incopilot: cannot write reports: {exc}", style="red"))
             return EXIT_ERROR
