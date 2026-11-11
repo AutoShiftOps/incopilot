@@ -1,6 +1,8 @@
-# Product plan
+# Project plan
 
-Status: working draft, revised 2026-11-10. The open-source CLI is real and released. The team product below is a plan that depends on the validation gate in Stage 3.
+Status: working draft, revised 2026-11-11.
+
+incopilot is a free, MIT-licensed open-source project maintained in spare time. Nothing is for sale: there are no paid plans, no pilots and no sponsorship. A team edition is described below as a possible later stage. Whether it would ever be offered commercially is undecided, and would only be considered once the requirements in section 7 are met.
 
 ## 1. Vision
 
@@ -20,7 +22,7 @@ Three principles, in priority order:
 |---|---|
 | **User** | Founding engineers, CTOs and first infrastructure hires |
 | **Team** | 5 to 50 engineers with no dedicated SRE function |
-| **Buyer** | The same person as the user. No procurement process |
+| **Decision** | The same person can decide to adopt it. No procurement process |
 | **Moment** | Something is broken, several services are logging errors, and nobody knows which one started it or whether this happened before |
 
 ## 3. Market gaps
@@ -51,13 +53,13 @@ What weakens the bet: funded vendors are moving down-market, HolmesGPT is free, 
 
 ## 5. Stages
 
-| Stage | What ships | Who pays | Exit criteria |
-|---|---|---|---|
-| 1. Memory in the CLI | Fingerprints, local history, "seen before" with fix notes. Free and open source | Nobody | Used in real incidents by people other than the maintainers |
-| 2. Live and accurate | `incopilot watch` for continuous local triage, stack-trace grouping, burst detection, a labeled accuracy corpus, PyPI release | Nobody | Published accuracy; one-command install |
-| 3. Validation gate | Interviews, adoption data, a paid pilot ask, a written decision | — | See section 6 |
-| 4. Team memory | A small service that receives redacted findings pushed by the CLI (`--push <url>`) and gives the team one shared history: live findings, recurrence, what fixed it, by service | Teams | Three paying teams active for 30 days |
-| 5. Team portal | Alerts on recurrence and severity, trends, roles, retention, optional hosted version | Teams | Decided at the end of Stage 4 |
+| Stage | What ships | Exit criteria |
+|---|---|---|
+| 1. Memory in the CLI | Fingerprints, local history, "seen before" with fix notes. Free and open source | Used in real incidents by people other than the maintainers |
+| 2. Live and accurate | `incopilot watch` for continuous local triage, stack-trace grouping, burst detection, a labeled accuracy corpus, PyPI release | Published accuracy; one-command install |
+| 3. Validation gate | Interviews, adoption data, teams trying it on real incidents, a written decision | See section 6 |
+| 4. Team memory | A small service that receives redacted findings pushed by the CLI (`--push <url>`) and gives the team one shared history: live findings, recurrence, what fixed it, by service | Three teams running it for 30 days |
+| 5. Team portal | Alerts on recurrence and severity, trends, roles, retention | Decided at the end of Stage 4 |
 
 Stages 1 and 2 are worth doing whatever Stage 3 concludes.
 
@@ -68,21 +70,18 @@ Stages 1 and 2 are worth doing whatever Stage 3 concludes.
 - At least 10 interviews with people who match section 2, and at least half describe finding the cause of an incident (not alert volume) as a top-three pain
 - At least half of those interviewed can name an incident that repeated in the last six months
 - At least 3 teams have used the CLI in a real incident and can say what it changed
-- At least 2 teams commit to a paid pilot at a stated price
-- The legal entity, ownership and compliance position for a commercial offer is confirmed in writing by qualified advisers
+- At least 2 teams say they would run a shared team history themselves if it existed
 
 **No-go** means the CLI continues as open source and no service is built. The decision is recorded in `docs/decisions/` with the evidence.
 
-## 7. Business model
+## 7. Licensing and sustainability
 
-Open core.
+- **The CLI is free and stays free:** all collectors, local memory and all reports, under the MIT license.
+- **A team edition is undecided.** If Stage 4 is built, the first form is software that teams run themselves, so no one operates a service on their behalf.
+- **Nothing is sold today.** No payments, donations or sponsorships are accepted.
+- **Before any commercial offering is considered,** the maintainers would first need written confirmation from qualified advisers on the legal entity, ownership, licensing and any personal or contractual restrictions that apply to them. Until then this stays a free project.
 
-- **Free forever:** the CLI, local memory, all collectors, all reports.
-- **Paid:** shared team memory. One history across people and services, live findings from `watch --push`, recurrence alerts, retention and roles.
-- **Delivery:** self-hosted license first, because it matches principle 2 and avoids running infrastructure. Hosted later if self-hosted users ask for it.
-- **Price:** set by the pilot ask in Stage 3. A flat per-team price is the starting hypothesis, since per-seat pricing punishes small teams for adding responders. No number is assumed here.
-
-Why this can hold against larger competitors: the value compounds with a team's own history, the data is small and stays theirs, and the free tool is useful alone, which is how it gets found.
+What makes the project worth sustaining: its value grows with a team's own incident history, the data is small and stays theirs, and the free tool is useful alone.
 
 ## 8. Architecture for Stages 4 and 5
 
@@ -114,10 +113,10 @@ flowchart LR
 | A wrong answer during a live incident ends trust | Evidence on every finding; similarity is shown as a score, never as certainty; publish accuracy |
 | A leaked secret | Redaction on by default; history stores no log text |
 | One maintainer | Small scope; no Stage 4 without the gate |
-| Building before selling | Stage 3 exists to stop exactly this |
+| Building what nobody uses | Stage 3 exists to stop exactly this |
 
 ## 10. Stop conditions
 
 - Stage 3 does not meet the go criteria: stop at the CLI.
-- Stage 4 has fewer than three active paying teams after 90 days: stop and write up why.
+- Stage 4 has fewer than three active teams after 90 days: stop and write up why.
 - Any requirement to take automated action on production systems: decline it.

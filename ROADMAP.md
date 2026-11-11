@@ -1,6 +1,6 @@
 # Roadmap
 
-incopilot is an open-source, read-only incident triage CLI. This roadmap covers the CLI and the possible path to a team product. The reasoning behind it is in [docs/PRODUCT_PLAN.md](docs/PRODUCT_PLAN.md).
+incopilot is an open-source, read-only incident triage CLI. It is free and MIT licensed, and nothing here is for sale. This roadmap covers the CLI and a possible team edition later. The reasoning behind it is in [docs/PRODUCT_PLAN.md](docs/PRODUCT_PLAN.md).
 
 Work is tracked in [GitHub issues](https://github.com/AutoShiftOps/incopilot/issues), grouped by [milestone](https://github.com/AutoShiftOps/incopilot/milestones). Priorities: **P0** must ship for the milestone, **P1** should ship, **P2** if time allows.
 
@@ -11,7 +11,7 @@ No dates are promised. Stages 4 and 5 only start if Stage 3 says go.
 | 1 | v0.2 Stabilize and ship | Released and verified, with incident memory in the CLI | In progress |
 | 2 | v0.3 Sharper triage | Live local triage and published accuracy | Planned |
 | 2 | v0.4 Share and integrate | Fits into CI, chat and existing log stores | Planned |
-| 3 | Validation gate | Evidence that teams want, and would pay for, shared memory | Planned |
+| 3 | Validation gate | Evidence that teams use it and want shared memory | Planned |
 | 4 | v0.5 Team memory (alpha) | One shared incident history, fed by findings pushed from the CLI | Conditional on Stage 3 |
 | 5 | v1.0 Team portal | Recurrence alerts, trends, roles | Conditional on Stage 4 |
 
@@ -52,10 +52,12 @@ This phase is evidence, not code. It answers the two open questions in the produ
 
 - Interviews with engineers on 5 to 50 person teams
 - Adoption signals from the open-source tool
-- A paid pilot ask with a real price
+- A handful of teams trying it on real incidents and reporting back
 - A written go or no-go decision
 
 **Go if** the criteria in the product plan are met. **Otherwise** incopilot stays a maintained open-source CLI, which is a fine outcome.
+
+Whether a team edition would ever be offered commercially is undecided and is not part of this roadmap.
 
 ## Phase 4: v0.5 Team memory (alpha)
 
@@ -63,7 +65,7 @@ A small self-hosted service that receives redacted findings pushed by the CLI (`
 
 ## Phase 5: v1.0 Team portal
 
-Alerts on recurrence and severity, trends over time, teams and roles, an audit log, and retention controls. Whether to offer a hosted version is decided here, not before.
+Alerts on recurrence and severity, trends over time, teams and roles, an audit log, and retention controls. Whether anyone runs a hosted version is decided here, not before.
 
 ## Not planned
 
