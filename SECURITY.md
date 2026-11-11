@@ -16,21 +16,24 @@ Include the following information:
 
 ## Security Considerations
 
-### What incopilot Does
-- Reads and analyzes local log files
-- Executes `journalctl` and `docker logs` commands on your system
-- Generates reports containing log patterns and analysis
-- Does NOT send data to external services
-- Does NOT store data persistently
+### What incopilot does
+- Reads logs through `journalctl`, `docker logs`, `kubectl logs`, or a file you name
+- Runs those tools with a fixed argument list and no shell; values that look like options are rejected
+- Masks secrets (passwords, tokens, keys, credentials in URLs, emails) in every report by default
+- Writes `report.md` and `report.json` to the directory you choose
+- Sends nothing over the network unless you pass `--ai`
 
-### What incopilot Does NOT Do
-- Execute destructive commands (read-only operations only)
-- Connect to remote services or cloud APIs
-- Store credentials or secrets
-- Modify system configuration
+### What `--ai` sends
+- Only the redacted findings summary: counts, order of appearance, up to two redacted example lines per finding, and the top repeating lines
+- Never the raw log, and never anything when `--no-redact` is set
+- To the provider you configure with your own key, over HTTPS (plain HTTP is accepted for localhost only, for local models)
+- Redaction is pattern-based and cannot guarantee that every secret is caught. Review what your logs contain before enabling `--ai`
+
+### What incopilot does not do
+- Change anything: no restarts, deletes, scaling or config edits. Suggested commands are read-only and are printed, never run
+- Execute or act on anything a model returns
+- Store credentials. API keys are read from environment variables only
 
 ## Supported Python Versions
 
-- Python 3.10+
-- Python 3.11+
-- Python 3.12+
+- Python 3.10, 3.11, 3.12 and 3.13

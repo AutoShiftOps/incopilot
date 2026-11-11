@@ -1,5 +1,5 @@
 [Unit]
-Description=Run AI Incident Copilot every 10 minutes
+Description=Run incopilot triage every 10 minutes
 
 [Timer]
 OnBootSec=2min

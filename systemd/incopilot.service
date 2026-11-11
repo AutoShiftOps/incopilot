@@ -1,17 +1,19 @@
 [Unit]
-Description=AI Incident Copilot — scheduled log analysis
+Description=incopilot scheduled log triage (read-only)
 After=network.target
 
 [Service]
 Type=oneshot
 User=YOUR_USER
-WorkingDirectory=/opt/incopilot
-ExecStart=/opt/incopilot/.venv/bin/python -m incopilot bundle \
+ExecStart=/opt/incopilot/.venv/bin/incopilot bundle \
   --unit nginx \
   --container my-api \
   --since-journal "10 min ago" \
   --since-docker 10m \
-  --out-dir /var/log/incopilot
+  --out-dir /var/log/incopilot \
+  --quiet
+# Exit code 3 means the --fail-on threshold was met, which is not a unit failure.
+SuccessExitStatus=3
 
 [Install]
 WantedBy=multi-user.target

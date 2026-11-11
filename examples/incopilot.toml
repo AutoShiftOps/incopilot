@@ -1,0 +1,25 @@
+# Copy to ./incopilot.toml, or pass with --config.
+
+# Pattern packs to load: core, nginx, postgres, node, kubernetes, jvm, or "all".
+packs = ["core", "nginx", "postgres"]
+
+# Lines matching these are ignored unless they are logged at error level.
+# Setting this replaces the built-in health-check filter.
+noise = ["healthz", "readyz", "livez", "GET /metrics"]
+
+[redact]
+# Extra things to mask in reports, on top of the built-in secret rules.
+extra = ["cust-[0-9]+", "order_[0-9a-f]{12}"]
+
+[ai]
+# Only used when you pass --ai. Keys always come from the environment.
+provider = "anthropic"
+
+# Your own failure signatures.
+[[patterns]]
+key = "ledger_mismatch"
+regex = "ledger mismatch"
+signal = "errors"          # latency | traffic | errors | saturation
+severity = "critical"      # low | medium | high | critical
+title = "Ledger mismatch"
+advice = "Compare the ledger totals for the affected account before retrying."

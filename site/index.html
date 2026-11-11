@@ -1,0 +1,310 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>incopilot</title>
+<meta name="description" content="Read-only incident triage for logs: journalctl, Docker, Kubernetes and files, mapped to the Four Golden Signals.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Sans+Condensed:wght@600&display=swap">
+<style>
+/* Layout: one 1040px column. The hero pairs the thesis with a to-scale incident timeline;
+   everything after is quiet two-column rows that stack on phones. */
+:root {
+  --bg: #f2f5f7; --surface: #ffffff; --ink: #15202b; --muted: #55657a; --line: #d5dde5;
+  --accent: #0a6a70; --accent-ink: #ffffff;
+  --code-bg: #111a23; --code-fg: #dce6ee; --code-dim: #8499ab; --code-line: #26333f;
+  --crit: #c4302b; --high: #c9621a; --med: #a67c00; --ok: #2f7d4f;
+  --display: "IBM Plex Sans Condensed", "Arial Narrow", system-ui, sans-serif;
+  --body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f151b; --surface: #17202a; --ink: #e5ecf2; --muted: #9aabbb; --line: #2a3643;
+    --accent: #5fc6c4; --accent-ink: #0b1418;
+    --code-bg: #0a0f14; --code-fg: #dce6ee; --code-dim: #7f93a5; --code-line: #212c37;
+    --crit: #f0706a; --high: #f09a55; --med: #e0b93f; --ok: #6cc391;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f151b; --surface: #17202a; --ink: #e5ecf2; --muted: #9aabbb; --line: #2a3643;
+  --accent: #5fc6c4; --accent-ink: #0b1418;
+  --code-bg: #0a0f14; --code-fg: #dce6ee; --code-dim: #7f93a5; --code-line: #212c37;
+  --crit: #f0706a; --high: #f09a55; --med: #e0b93f; --ok: #6cc391;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font: 400 16px/1.6 var(--body); margin: 0; }
+.wrap { max-width: 1040px; margin: 0 auto; padding-block: 0;
+  padding-left: max(20px, env(safe-area-inset-left, 0px)); padding-right: max(20px, env(safe-area-inset-right, 0px)); }
+a { color: var(--accent); text-underline-offset: 3px; }
+a:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+h1, h2, h3 { font-family: var(--display); font-weight: 600; line-height: 1.1; text-wrap: balance; margin: 0; }
+h1 { font-size: clamp(2.3rem, 6vw, 3.9rem); letter-spacing: -0.01em; }
+h2 { font-size: clamp(1.6rem, 3.4vw, 2.2rem); }
+h3 { font-size: 1.15rem; font-family: var(--body); line-height: 1.3; }
+p { margin: 0; max-width: 62ch; }
+code, pre, .mono { font-family: var(--mono); }
+code { font-size: 0.9em; }
+.label { font: 500 0.75rem/1 var(--mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+
+.top { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding-block: 20px; flex-wrap: wrap; }
+.brand { font: 500 1.05rem var(--mono); color: var(--ink); text-decoration: none; }
+.brand span { color: var(--accent); }
+.top nav { display: flex; gap: 20px; flex-wrap: wrap; font-size: 0.95rem; }
+
+.hero { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr); gap: 48px; align-items: start; padding-block: 40px 64px; }
+.hero-copy { display: flex; flex-direction: column; gap: 20px; }
+.hero-copy .lede { font-size: 1.15rem; color: var(--muted); }
+.install { display: flex; align-items: stretch; background: var(--code-bg); color: var(--code-fg); border-radius: 6px; overflow: hidden; max-width: 100%; }
+.install code { padding: 12px 14px; overflow-x: auto; white-space: nowrap; flex: 1; min-width: 0; font-size: 0.85rem; }
+.copy { font: 500 0.8rem var(--mono); background: transparent; color: var(--code-dim); border: 0; border-left: 1px solid var(--code-line); padding: 0 14px; cursor: pointer; }
+.copy:hover { color: var(--code-fg); }
+.cta { display: flex; gap: 14px; flex-wrap: wrap; align-items: center; }
+.btn { display: inline-block; background: var(--accent); color: var(--accent-ink); padding: 10px 18px; border-radius: 6px; text-decoration: none; font-weight: 500; }
+
+/* incident timeline */
+.incident { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 20px; display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+.incident header { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+.sev { font: 500 0.75rem/1 var(--mono); letter-spacing: 0.06em; text-transform: uppercase; }
+.sev.crit { color: var(--crit); } .sev.high { color: var(--high); } .sev.med { color: var(--med); }
+.strip { position: relative; height: 34px; margin: 0 6px; }
+.strip::before { content: ""; position: absolute; left: 0; right: 0; top: 9px; height: 2px; background: var(--line); }
+.strip i { position: absolute; top: 2px; width: 4px; height: 16px; margin-left: -2px; border-radius: 2px; }
+.strip i.crit { background: var(--crit); } .strip i.high { background: var(--high); } .strip i.med { background: var(--med); }
+.strip span { position: absolute; top: 22px; font: 400 0.7rem/1 var(--mono); color: var(--muted); }
+.strip span.end { right: 0; }
+.events { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.events li { display: grid; grid-template-columns: 4.6rem minmax(0, 1fr) auto; gap: 10px; align-items: baseline; padding: 7px 0; border-top: 1px solid var(--line); font-size: 0.92rem; }
+.events time { font: 400 0.8rem var(--mono); color: var(--muted); font-variant-numeric: tabular-nums; }
+.events small { color: var(--muted); font-size: 0.8rem; }
+.events li.first b { color: var(--accent); }
+.incident footer { font-size: 0.85rem; color: var(--muted); }
+
+section { padding-block: 56px; border-top: 1px solid var(--line); }
+.row { display: grid; grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr); gap: 40px; align-items: start; }
+.row > div:first-child { display: flex; flex-direction: column; gap: 14px; }
+.row p { color: var(--muted); }
+
+.tabs { display: flex; gap: 4px; flex-wrap: wrap; }
+.tabs button { font: 500 0.82rem var(--mono); background: transparent; color: var(--muted); border: 1px solid var(--line); border-radius: 5px; padding: 6px 12px; cursor: pointer; }
+.tabs button[aria-selected="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.term { background: var(--code-bg); color: var(--code-fg); border-radius: 8px; margin-top: 10px; overflow-x: auto; }
+.term pre { margin: 0; padding: 18px; font-size: 0.84rem; line-height: 1.65; }
+.term .c { color: var(--code-dim); }
+.panel-stack { min-width: 0; }
+
+.facts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 28px 40px; margin: 0; }
+.facts div { display: flex; flex-direction: column; gap: 6px; }
+.facts dt { font-weight: 600; }
+.facts dd { margin: 0; color: var(--muted); font-size: 0.97rem; }
+
+.sent { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; background: var(--surface); }
+.sent > div { padding: 18px 20px; display: flex; flex-direction: column; gap: 10px; }
+.sent > div + div { border-left: 1px solid var(--line); }
+.sent ul { margin: 0; padding-left: 1.1em; color: var(--muted); font-size: 0.95rem; display: flex; flex-direction: column; gap: 4px; }
+.yes { color: var(--ok); } .no { color: var(--crit); }
+
+.limits { margin: 0; padding-left: 1.1em; color: var(--muted); display: flex; flex-direction: column; gap: 8px; max-width: 62ch; }
+.end { padding-block: 32px 48px; border-top: 1px solid var(--line); display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; color: var(--muted); font-size: 0.9rem; }
+
+@media (max-width: 800px) {
+  .hero, .row { grid-template-columns: minmax(0, 1fr); gap: 28px; }
+  .hero { padding-block: 16px 44px; }
+  section { padding-block: 40px; }
+  .facts, .sent { grid-template-columns: minmax(0, 1fr); }
+  .sent > div + div { border-left: 0; border-top: 1px solid var(--line); }
+}
+@media (prefers-reduced-motion: no-preference) { .btn, .copy, .tabs button { transition: color .15s, background .15s; } }
+</style>
+
+<div class="wrap">
+  <div class="top">
+    <a class="brand" href="#top" id="top">in<span>copilot</span></a>
+    <nav aria-label="Site">
+      <a href="#sources">Sources</a>
+      <a href="#report">Report</a>
+      <a href="#ai">AI</a>
+      <a href="https://github.com/AutoShiftOps/incopilot">GitHub</a>
+    </nav>
+  </div>
+
+  <main>
+    <div class="hero">
+      <div class="hero-copy">
+        <span class="label">Open source · MIT · read-only</span>
+        <h1>The loudest error is rarely the first one.</h1>
+        <p class="lede">incopilot reads your logs during an incident and tells you what went wrong, in what order, and which safe checks to run next. It works on systemd, Docker, Kubernetes and plain files, with no account and no agent.</p>
+        <div class="install">
+          <code id="install-cmd">pip install git+https://github.com/AutoShiftOps/incopilot</code>
+          <button class="copy" type="button" id="copy-install" data-copy="install-cmd">Copy</button>
+        </div>
+        <div class="cta">
+          <a class="btn" href="https://github.com/AutoShiftOps/incopilot">View on GitHub</a>
+          <a href="https://github.com/AutoShiftOps/incopilot#quick-start">Quick start</a>
+        </div>
+      </div>
+
+      <div class="incident" aria-label="Example: order of first appearance in a checkout outage">
+        <header>
+          <span class="label">examples/checkout-incident.log</span>
+          <span class="sev crit">Overall: critical</span>
+        </header>
+        <div class="strip" aria-hidden="true">
+          <i class="med" style="left:0%"></i><i class="high" style="left:15.2%"></i><i class="high" style="left:18.2%"></i>
+          <i class="high" style="left:21.2%"></i><i class="med" style="left:39.4%"></i><i class="crit" style="left:72.7%"></i>
+          <i class="high" style="left:78.8%"></i><i class="high" style="left:100%"></i>
+          <span>09:41:07</span><span class="end">09:41:40</span>
+        </div>
+        <ol class="events">
+          <li class="first"><time>09:41:07</time><span><b>Slow operations</b> <small>latency</small></span><span class="sev med">medium</span></li>
+          <li><time>09:41:12</time><span>Connection limit reached <small>saturation</small></span><span class="sev high">high</span></li>
+          <li><time>09:41:13</time><span>Timeouts <small>latency</small></span><span class="sev high">high</span></li>
+          <li><time>09:41:14</time><span>HTTP 5xx responses <small>errors · 5×</small></span><span class="sev high">high</span></li>
+          <li><time>09:41:20</time><span>Rate limiting <small>traffic</small></span><span class="sev med">medium</span></li>
+          <li><time>09:41:31</time><span>Out of memory <small>saturation</small></span><span class="sev crit">critical</span></li>
+          <li><time>09:41:33</time><span>Restart loop <small>errors</small></span><span class="sev high">high</span></li>
+          <li><time>09:41:40</time><span>Connection refused <small>errors</small></span><span class="sev high">high</span></li>
+        </ol>
+        <footer>Real output from the bundled example. The out-of-memory kill is the most severe finding, but slow queries and a full connection pool came 24 seconds earlier.</footer>
+      </div>
+    </div>
+
+    <section id="sources">
+      <div class="row">
+        <div>
+          <h2>One command per source</h2>
+          <p>Each collector only reads. External tools run with a fixed argument list and no shell, and anything that looks like an injected option is rejected.</p>
+          <p>Plain text, JSON lines, logfmt and kubectl prefixes are all parsed. Health-check lines are dropped unless they report an error.</p>
+        </div>
+        <div class="panel-stack">
+          <div class="tabs" role="tablist" aria-label="Log sources">
+            <button type="button" role="tab" id="tab-k8s" aria-controls="p-k8s" aria-selected="true">Kubernetes</button>
+            <button type="button" role="tab" id="tab-docker" aria-controls="p-docker" aria-selected="false">Docker</button>
+            <button type="button" role="tab" id="tab-journal" aria-controls="p-journal" aria-selected="false">systemd</button>
+            <button type="button" role="tab" id="tab-file" aria-controls="p-file" aria-selected="false">File / stdin</button>
+            <button type="button" role="tab" id="tab-bundle" aria-controls="p-bundle" aria-selected="false">Bundle</button>
+          </div>
+          <div class="term" role="tabpanel" id="p-k8s" aria-labelledby="tab-k8s"><pre><span class="c"># a workload, a pod, or a label selector</span>
+incopilot k8s --pod deploy/api -n prod --since 30m
+
+<span class="c"># the container that just crashed</span>
+incopilot k8s -l app=api -n prod --previous</pre></div>
+          <div class="term" role="tabpanel" id="p-docker" aria-labelledby="tab-docker" hidden><pre><span class="c"># stdout and stderr, with timestamps</span>
+incopilot docker --container my-api --since 1h</pre></div>
+          <div class="term" role="tabpanel" id="p-journal" aria-labelledby="tab-journal" hidden><pre>incopilot journal --unit nginx --since "30 min ago" --packs core,nginx</pre></div>
+          <div class="term" role="tabpanel" id="p-file" aria-labelledby="tab-file" hidden><pre>incopilot file --path /var/log/app.log
+incopilot file --path archive.log.gz
+
+<span class="c"># or pipe anything in</span>
+kubectl logs deploy/api | incopilot file --path -</pre></div>
+          <div class="term" role="tabpanel" id="p-bundle" aria-labelledby="tab-bundle" hidden><pre><span class="c"># proxy, app and pod as one timeline</span>
+incopilot bundle --unit nginx --container my-api \
+  --pod deploy/api -n prod</pre></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="report">
+      <div class="row">
+        <div>
+          <h2>What the report gives you</h2>
+          <p>Two files per run: <code>report.md</code> to paste into the incident channel and <code>report.json</code> for pipelines.</p>
+        </div>
+        <dl class="facts">
+          <div><dt>Four Golden Signals</dt><dd>Every finding is mapped to latency, traffic, errors or saturation, so you can see which kind of trouble you are in.</dd></div>
+          <div><dt>Order of first appearance</dt><dd>Which pattern showed up first. Earlier ones are likelier causes; later ones are often knock-on effects.</dd></div>
+          <div><dt>Severity you can gate on</dt><dd><code>--fail-on high</code> exits 3, so a post-deploy check or a timer can act on the result.</dd></div>
+          <div><dt>Checks filled in for you</dt><dd>Read-only commands with your unit, container or pod already in place. Printed, never run.</dd></div>
+          <div><dt>Secrets masked by default</dt><dd>Passwords, tokens, keys, URL credentials and emails are redacted before anything is written.</dd></div>
+          <div><dt>Your own patterns</dt><dd>Add failure signatures, noise filters and redaction rules in <code>incopilot.toml</code>. Packs ship for nginx, PostgreSQL, Node.js, Kubernetes and the JVM.</dd></div>
+        </dl>
+      </div>
+    </section>
+
+    <section id="ai">
+      <div class="row">
+        <div>
+          <h2>AI is optional, and it only explains</h2>
+          <p>Everything above works offline. Pass <code>--ai</code> with your own Anthropic or OpenAI-compatible key, or point it at a local Ollama model, and the report gains up to three ranked hypotheses.</p>
+          <p>The answer is labeled unverified. Nothing a model returns is ever executed.</p>
+        </div>
+        <div class="panel-stack">
+          <div class="sent">
+            <div>
+              <span class="label yes">Sent with --ai</span>
+              <ul>
+                <li>Finding counts and severities</li>
+                <li>Order of first appearance</li>
+                <li>Up to two redacted example lines per finding</li>
+                <li>Top repeating lines, redacted</li>
+              </ul>
+            </div>
+            <div>
+              <span class="label no">Never sent</span>
+              <ul>
+                <li>The raw log</li>
+                <li>Lines that matched nothing</li>
+                <li>Anything at all with <code>--no-redact</code></li>
+                <li>Anything at all without <code>--ai</code></li>
+              </ul>
+            </div>
+          </div>
+          <div class="term"><pre>export ANTHROPIC_API_KEY=...
+incopilot k8s --pod deploy/api -n prod --ai
+
+<span class="c"># fully local, no key</span>
+incopilot file --path app.log --ai \
+  --ai-provider ollama --ai-model llama3.1</pre></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="limits">
+      <div class="row">
+        <div>
+          <h2>What it does not do</h2>
+          <p>Correlate and explain, never auto-act. That is a design rule, and a test enforces it.</p>
+        </div>
+        <ul class="limits">
+          <li>It never restarts, deletes, scales or edits anything.</li>
+          <li>Detection is rule-based. It recognizes known failure signatures; it does not understand your application.</li>
+          <li>Order of appearance is a lead to check, not proof of cause.</li>
+          <li>It reads logs only: no metrics, traces or deploy history.</li>
+          <li>Redaction is pattern-based and cannot promise to catch every secret.</li>
+        </ul>
+      </div>
+    </section>
+  </main>
+
+  <div class="end">
+    <span>MIT licensed. Python 3.10 to 3.13. One runtime dependency.</span>
+    <span><a href="https://github.com/AutoShiftOps/incopilot">Source</a> · <a href="https://github.com/AutoShiftOps/incopilot/blob/main/SECURITY.md">Security</a> · <a href="https://github.com/AutoShiftOps/incopilot/blob/main/CHANGELOG.md">Changelog</a></span>
+  </div>
+</div>
+
+<script>
+(function () {
+  var tabs = Array.prototype.slice.call(document.querySelectorAll('[role="tab"]'));
+  tabs.forEach(function (tab) {
+    tab.addEventListener('click', function () {
+      tabs.forEach(function (t) {
+        var on = t === tab;
+        t.setAttribute('aria-selected', on ? 'true' : 'false');
+        document.getElementById(t.getAttribute('aria-controls')).hidden = !on;
+      });
+    });
+  });
+  var btn = document.getElementById('copy-install');
+  btn.addEventListener('click', function () {
+    var el = document.getElementById(btn.getAttribute('data-copy'));
+    var done = function () { btn.textContent = 'Copied'; setTimeout(function () { btn.textContent = 'Copy'; }, 1500); };
+    var select = function () {
+      var r = document.createRange(); r.selectNodeContents(el);
+      var s = window.getSelection(); s.removeAllRanges(); s.addRange(r);
+      btn.textContent = 'Selected';
+    };
+    try { navigator.clipboard.writeText(el.textContent).then(done, select); } catch (e) { select(); }
+  });
+})();
+</script>
