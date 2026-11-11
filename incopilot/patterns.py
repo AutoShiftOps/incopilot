@@ -164,6 +164,76 @@ JVM = [
        "Unbounded recursion. The repeating frames in the trace show where.", "jvm"),
 ]
 
+REDIS = [
+    _p("redis_oom", r"OOM command not allowed when used memory > 'maxmemory'", "saturation", "critical",
+       "Redis: maxmemory reached",
+       "Redis refuses writes at maxmemory. Check used_memory against maxmemory and the eviction policy.", "redis"),
+    _p("redis_misconf", r"(MISCONF Redis is configured to save RDB snapshots|Background saving error"
+       r"|Can't save in background)", "errors", "critical", "Redis: snapshot failing, writes refused",
+       "RDB persistence is failing, so writes are refused. Check disk space and fork memory on the Redis host.",
+       "redis"),
+    _p("redis_max_clients", r"max number of clients reached", "saturation", "high",
+       "Redis: out of client connections",
+       "Redis hit maxclients. Check client counts per host (CLIENT LIST) for leaked connections.", "redis"),
+    _p("redis_loading", r"LOADING Redis is loading the dataset in memory", "errors", "high",
+       "Redis: still loading the dataset",
+       "Redis restarted and is loading its dataset. Find out why it restarted.", "redis"),
+    _p("redis_master_link", r"(Connection with (?:master|primary) lost|Error condition on socket for SYNC"
+       r"|MASTER aborted replication)", "errors", "high", "Redis: replication link broken",
+       "A replica lost its primary. Check the primary's health and the network between them.", "redis"),
+]
+
+MYSQL = [
+    _p("mysql_deadlock", r"Deadlock found when trying to get lock", "errors", "high", "MySQL: deadlock",
+       "Deadlocks. SHOW ENGINE INNODB STATUS names the two transactions and the locks they held.", "mysql"),
+    _p("mysql_lock_wait", r"Lock wait timeout exceeded", "latency", "high", "MySQL: lock wait timeout",
+       "Statements waited too long for row locks. Look for long-running transactions holding them.", "mysql"),
+    _p("mysql_gone_away", r"(MySQL server has gone away|Lost connection to MySQL server)", "errors", "high",
+       "MySQL: connection lost",
+       "Connections to MySQL dropped. Check for a server restart, wait_timeout or max_allowed_packet.", "mysql"),
+    _p("mysql_too_many_connections", r"(ER_CON_COUNT_ERROR|ERROR 1040\b)", "saturation", "critical",
+       "MySQL: out of connections",
+       "MySQL is out of connections. Compare Threads_connected with max_connections and pool sizes.", "mysql"),
+    _p("mysql_table_full", r"The table '[^']+' is full", "saturation", "high", "MySQL: table full",
+       "A table cannot grow. Check disk space and tmp_table_size for internal temporary tables.", "mysql"),
+]
+
+HAPROXY = [
+    _p("haproxy_no_server", r"has no server available!", "errors", "critical",
+       "HAProxy: backend has no server available",
+       "Every server in a backend is down; HAProxy returns 503. Check backend health checks.", "haproxy"),
+    _p("haproxy_server_down", r"\bServer \S+ is DOWN\b", "errors", "high", "HAProxy: server marked down",
+       "A health check took a server out. The log line gives the check result; check that server.", "haproxy"),
+    _p("haproxy_nosrv", r"<NOSRV>", "errors", "high", "HAProxy: requests with no server (<NOSRV>)",
+       "Requests were not routed to any server. Check backend health and use_backend rules.", "haproxy"),
+    _p("haproxy_limit", r"reached (?:the configured maximum connection limit|process FD limit"
+       r"|system memory limit|system FD limit)", "saturation", "high", "HAProxy: connection limit reached",
+       "HAProxy reached a limit and is queueing or dropping connections. Check maxconn and ulimit.", "haproxy"),
+]
+
+KAFKA = [
+    _p("kafka_not_leader", r"(NOT_LEADER_OR_FOLLOWER|NotLeaderOrFollowerException|NotLeaderForPartition"
+       r"|LEADER_NOT_AVAILABLE)", "errors", "medium", "Kafka: partition leader unavailable",
+       "Clients are hitting partitions without a leader. Check for broker restarts or leader elections.", "kafka"),
+    _p("kafka_isr_shrink", r"Shrinking ISR from", "errors", "high", "Kafka: ISR shrinking",
+       "Replicas fell out of sync. Check the lagging broker's disk, network and GC.", "kafka"),
+    _p("kafka_offline_partitions", r"(OfflinePartitions|offline partitions?\b)", "errors", "critical",
+       "Kafka: offline partitions",
+       "Partitions have no live leader and cannot be read or written. Bring back the brokers holding them.",
+       "kafka"),
+    _p("kafka_storage", r"(KafkaStorageException|Stopping serving logs in dir)", "saturation", "critical",
+       "Kafka: log directory failed",
+       "A broker log directory failed. Check that disk for errors or a full filesystem.", "kafka"),
+    _p("kafka_consumer_poll", r"(CommitFailedException|max\.poll\.interval\.ms|poll timeout has expired)",
+       "latency", "high", "Kafka: consumer kicked from its group",
+       "A consumer took too long between polls and lost its partitions. Check processing time per batch.",
+       "kafka"),
+    _p("kafka_record_too_large", r"(RecordTooLargeException|MESSAGE_TOO_LARGE)", "errors", "medium",
+       "Kafka: record too large",
+       "A record exceeds max.request.size or message.max.bytes. Compare the sizes on producer and broker.",
+       "kafka"),
+]
+
 PACKS = {
     "core": CORE,
     "nginx": NGINX,
@@ -171,6 +241,10 @@ PACKS = {
     "node": NODE,
     "kubernetes": KUBERNETES,
     "jvm": JVM,
+    "redis": REDIS,
+    "mysql": MYSQL,
+    "haproxy": HAPROXY,
+    "kafka": KAFKA,
 }
 DEFAULT_PACKS = ("core",)
 

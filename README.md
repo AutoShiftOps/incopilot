@@ -113,7 +113,7 @@ Options go after the source, for example `incopilot file --path app.log --json`.
 
 | Option | Purpose |
 |---|---|
-| `--packs core,nginx` | Pattern packs: `core`, `nginx`, `postgres`, `node`, `kubernetes`, `jvm`, `all`. Default `core` |
+| `--packs core,nginx` | Pattern packs: `core`, `nginx`, `postgres`, `node`, `kubernetes`, `jvm`, `redis`, `mysql`, `haproxy`, `kafka`, `all`. Default `core` |
 | `--config FILE` | Settings file. `./incopilot.toml` is loaded automatically if present |
 | `--out-dir DIR` | Where reports are written. Default `out` |
 | `--html` | Also write `report.html`, a self-contained dashboard |

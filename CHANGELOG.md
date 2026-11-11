@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Pattern packs for Redis, MySQL, HAProxy and Kafka (`--packs redis,mysql,haproxy,kafka`)
 - Incident memory: each run is remembered as a fingerprint, similar past incidents are shown as "Seen before", and `incopilot history list|note|forget` manages them. Stored locally with no log text
 - `--html` writes a self-contained `report.html` dashboard
 - Terminal output shows the golden-signals summary and an order-of-first-appearance table
