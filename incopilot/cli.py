@@ -6,12 +6,13 @@ import argparse
 import json
 import re
 import sys
+from pathlib import Path
 
 from rich.console import Console
 from rich.table import Table
 from rich.text import Text
 
-from . import __version__, ai, collectors, settings
+from . import __version__, ai, collectors, memory, settings
 from .analyzer import Analysis, analyze
 from .html import render_html
 from .patterns import PACKS, SEVERITY_RANK, resolve_packs
@@ -54,6 +55,9 @@ def build_parser() -> argparse.ArgumentParser:
                    help="analyze only the last N bytes of input (default: 5000000)")
     g.add_argument("--timeout", type=int, default=collectors.DEFAULT_TIMEOUT,
                    help="seconds to wait for journalctl, docker or kubectl (default: 60)")
+    g = common.add_argument_group("incident memory")
+    g.add_argument("--no-history", action="store_true", help="do not record this run or look for past matches")
+    g.add_argument("--history", metavar="FILE", help="history file (default: ~/.incopilot/history.jsonl)")
     g = common.add_argument_group("privacy")
     g.add_argument("--no-redact", action="store_true", help="do not mask secrets in reports")
     g.add_argument("--redact-ips", action="store_true", help="also mask IPv4 addresses")
@@ -102,7 +106,49 @@ def build_parser() -> argparse.ArgumentParser:
     b.add_argument("-n", "--namespace")
     b.add_argument("--since-k8s", default="30m")
     b.add_argument("--path", action="append", default=[], help="log file (repeatable)")
+
+    h = sub.add_parser("history", help="list remembered incidents, add a note, or forget one")
+    h.add_argument("--history", metavar="FILE", help="history file (default: ~/.incopilot/history.jsonl)")
+    hs = h.add_subparsers(dest="history_cmd", required=True, metavar="ACTION")
+    hl = hs.add_parser("list", help="show remembered incidents, newest first")
+    hl.add_argument("--limit", type=int, default=20)
+    hn = hs.add_parser("note", help="record what fixed an incident")
+    hn.add_argument("id")
+    hn.add_argument("text")
+    hf = hs.add_parser("forget", help="remove one incident from history")
+    hf.add_argument("id")
     return ap
+
+
+def run_history(args) -> int:
+    """Handle `incopilot history ...`."""
+    path = Path(args.history) if args.history else memory.default_path()
+    console, err = Console(), Console(stderr=True)
+    if args.history_cmd == "list":
+        incidents = memory.load(path)[::-1][: max(0, args.limit)]
+        if not incidents:
+            console.print(Text(f"No incidents remembered yet ({path})."))
+            return EXIT_OK
+        table = Table(title="Remembered incidents", title_justify="left")
+        for col in ("ID", "Last seen", "Target", "Severity", "First to appear", "Note"):
+            table.add_column(col)
+        for inc in incidents:
+            table.add_row(inc.id, inc.last_seen_at[:16].replace("T", " "), Text(inc.target),
+                          Text(inc.severity, style=_STYLE.get(inc.severity, "")), inc.first or "n/a", Text(inc.note))
+        console.print(table)
+        return EXIT_OK
+    if args.history_cmd == "note":
+        hit = memory.set_note(path, args.id, args.text)
+        if hit is None:
+            err.print(Text(f"incopilot: no incident with id {args.id}", style="red"))
+            return EXIT_ERROR
+        console.print(Text(f"Noted on {hit.id}."))
+        return EXIT_OK
+    if not memory.forget(path, args.id):
+        err.print(Text(f"incopilot: no incident with id {args.id}", style="red"))
+        return EXIT_ERROR
+    console.print(Text(f"Forgot {args.id}."))
+    return EXIT_OK
 
 
 def collect(args) -> tuple[str, str, str, dict]:
@@ -148,6 +194,21 @@ def collect(args) -> tuple[str, str, str, dict]:
     if not parts:
         raise collectors.CollectorError("bundle needs at least one of --unit, --container, --pod, --path")
     return collectors.join_sources(parts), " + ".join(targets), ", ".join(windows) or "n/a", ctx
+
+
+def render_memory(console: Console, recorded, matches) -> None:
+    """Print past incidents that look like this one."""
+    if matches:
+        console.print("\n[bold]Seen before[/bold]")
+        for m in matches:
+            inc = m.incident
+            when = "today" if m.days_ago == 0 else f"{m.days_ago} day{'s' if m.days_ago != 1 else ''} ago"
+            pct = round(m.similarity * 100)
+            console.print(Text(f"  {inc.id}  {when} on {inc.target}  ({pct}% similar, {inc.severity})"))
+            console.print(Text(f"      {'Fix noted: ' + inc.note if inc.note else 'No fix noted.'}"))
+    if recorded is not None:
+        console.print(Text(f"\nRemembered as {recorded.id}. When it is fixed: "
+                           f'incopilot history note {recorded.id} "what fixed it"'))
 
 
 def render(console: Console, analysis: Analysis, ai_result, paths) -> None:
@@ -196,6 +257,8 @@ def render(console: Console, analysis: Analysis, ai_result, paths) -> None:
 def run(argv=None) -> int:
     """Run the CLI and return an exit code."""
     args = build_parser().parse_args(argv)
+    if args.source == "history":
+        return run_history(args)
     err = Console(stderr=True)
     try:
         cfg = settings.load(args.config)
@@ -221,12 +284,22 @@ def run(argv=None) -> int:
             ai_result = ai.hypothesize(analysis, meta, args.ai_provider or cfg.ai_provider,
                                        args.ai_model or cfg.ai_model, timeout=args.timeout)
 
+    recorded, matches = None, []
+    if not args.no_history and analysis.findings:
+        try:
+            recorded, matches = memory.remember(
+                Path(args.history) if args.history else memory.default_path(),
+                memory.from_analysis(analysis, target, args.source))
+        except OSError as exc:
+            err.print(Text(f"incopilot: history not updated: {exc}", style="yellow"))
+    seen = memory.matches_as_dicts(matches)
+
     commands = safe_next_commands(ctx)
-    report = build_report_json(meta, analysis, commands, ai_result)
+    report = build_report_json(meta, analysis, commands, ai_result, seen)
     paths = None
     if not args.no_write:
         try:
-            paths = write_outputs(args.out_dir, build_report_md(meta, analysis, commands, ai_result), report,
+            paths = write_outputs(args.out_dir, build_report_md(meta, analysis, commands, ai_result, seen), report,
                                   render_html(report) if args.html else None)
         except OSError as exc:
             err.print(Text(f"incopilot: cannot write reports: {exc}", style="red"))
@@ -236,6 +309,7 @@ def run(argv=None) -> int:
         print(json.dumps(report, indent=2, ensure_ascii=False))
     elif not args.quiet:
         render(Console(), analysis, ai_result, paths)
+        render_memory(Console(), recorded, matches)
 
     if args.fail_on and SEVERITY_RANK[analysis.severity] >= SEVERITY_RANK[args.fail_on]:
         return EXIT_THRESHOLD

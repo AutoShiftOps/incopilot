@@ -49,6 +49,29 @@ The terminal output already shows severity, golden signals, findings and the ord
 
 A [live example](https://autoshiftops.github.io/incopilot/viewer.html) is on the website.
 
+## It remembers
+
+Every run with findings is remembered as a fingerprint: which patterns fired, in what order, on which target. The next time something similar happens, incopilot tells you, along with what fixed it last time.
+
+```text
+Seen before
+  3f9a1c2e  12 days ago on prod/deploy/api  (100% similar, critical)
+      Fix noted: raised DB pool size from 10 to 30, added index on orders.customer_id
+
+Remembered as 8b21d0aa. When it is fixed: incopilot history note 8b21d0aa "what fixed it"
+```
+
+```bash
+incopilot history list                         # what is remembered
+incopilot history note 8b21d0aa "what fixed it"
+incopilot history forget 8b21d0aa
+```
+
+- **Local and private.** History is one file, `~/.incopilot/history.jsonl`, readable only by you. Set `INCOPILOT_HISTORY` or `--history FILE` to move it, for example into a repo your team shares.
+- **No log text is stored.** Only pattern names, counts, the target, the time and your note.
+- **Matching is deterministic.** The same two incidents always get the same score. No model is involved.
+- Re-running during the same incident updates one record instead of creating many. `--no-history` turns it off.
+
 ## Sources
 
 ```bash
@@ -78,6 +101,7 @@ incopilot bundle --unit nginx --container my-api --pod deploy/api -n prod
 - **Four Golden Signals**: which of latency, traffic, errors and saturation are affected
 - **Order of first appearance**: which pattern showed up first
 - **Read-only checks to run next**, filled in with your unit, container or pod
+- **Seen before**: similar past incidents from your history, with the fix you noted
 - **Top repeating lines**, with timestamps, IDs and IPs normalized so repeats group together
 - **Redacted examples** for every finding
 
@@ -98,6 +122,7 @@ Options go after the source, for example `incopilot file --path app.log --json`.
 | `--fail-on LEVEL` | Exit `3` when overall severity is at or above `low`, `medium`, `high` or `critical` |
 | `--max-bytes N` | Analyze only the last N bytes. Default 5,000,000 |
 | `--timeout N` | Seconds to wait for `journalctl`, `docker` or `kubectl`. Default 60 |
+| `--no-history`, `--history FILE` | Skip incident memory; use a different history file |
 | `--no-redact`, `--redact-ips` | Turn secret masking off; also mask IPv4 addresses |
 | `--ai`, `--ai-provider`, `--ai-model` | Optional AI hypothesis, see below |
 
@@ -163,6 +188,7 @@ cli.py ── collectors.py   journalctl / docker logs / kubectl logs / file  (r
        ── analyzer.py     patterns → findings, severity, golden signals, order of appearance
        ── redact.py       masks secrets before anything is written or sent
        ── ai.py           optional hypothesis from the redacted summary (stdlib HTTP, no SDK)
+       ── memory.py       incident fingerprints, local history, "seen before" matching
        ── reporter.py     report.md + report.json
        ── html.py         report.html: the viewer page with the report embedded
        ── patterns.py     built-in packs      settings.py   incopilot.toml
