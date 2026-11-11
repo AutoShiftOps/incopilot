@@ -145,6 +145,49 @@ def remember(path: Path, current: Incident, limit: int = 3) -> tuple[Incident, l
     return recorded, matches[:limit]
 
 
+def find_similar(path: Path, incident_id: str, limit: int = 3) -> list[Match]:
+    """Past incidents similar to the stored incident with this id."""
+    history = load(path)
+    me = next((h for h in history if h.id == incident_id), None)
+    if me is None:
+        return []
+    out = []
+    for past in history:
+        if past.id == me.id:
+            continue
+        score = similarity(me, past)
+        if score >= MATCH_THRESHOLD:
+            out.append(Match(past, score, max(0, (_parse(me.last_seen_at) - _parse(past.last_seen_at)).days)))
+    out.sort(key=lambda m: (-m.similarity, m.days_ago))
+    return out[:limit]
+
+
+def upsert(path: Path, incident: Incident, limit: int = 3) -> list[Match]:
+    """Create or replace one incident by id (used by watch) and return similar past incidents.
+
+    A note already attached to the stored record is kept.
+    """
+    history = load(path)
+    matches = []
+    for past in history:
+        if past.id == incident.id:
+            continue
+        score = similarity(incident, past)
+        if score >= MATCH_THRESHOLD:
+            days = max(0, (_parse(incident.last_seen_at) - _parse(past.last_seen_at)).days)
+            matches.append(Match(past, score, days))
+    matches.sort(key=lambda m: (-m.similarity, m.days_ago))
+    for i, past in enumerate(history):
+        if past.id == incident.id:
+            incident.note = past.note
+            history[i] = incident
+            break
+    else:
+        history.append(incident)
+    save(path, history)
+    return matches[:limit]
+
+
 def set_note(path: Path, incident_id: str, note: str) -> Incident | None:
     """Attach what fixed it. Returns the incident, or None if the id is unknown."""
     history = load(path)
