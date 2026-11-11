@@ -89,3 +89,23 @@ def test_every_new_pack_pattern_has_a_case():
     for pack in ("redis", "mysql", "haproxy", "kafka"):
         for p in resolve_packs([pack]):
             assert p.key in covered, p.key
+
+
+# Healthy lines that name a pattern's metric or setting, or a planned action.
+HEALTHY = [
+    ("kafka", "kafka_consumer_poll", "INFO ConsumerConfig values: max.poll.interval.ms = 300000"),
+    ("kafka", "kafka_offline_partitions",
+     "INFO kafka.controller:type=KafkaController,name=OfflinePartitionsCount value=0"),
+    ("kafka", "kafka_offline_partitions", "INFO There are 0 offline partitions"),
+    ("haproxy", "haproxy_server_down", "Server app/web1 is DOWN for maintenance."),
+]
+
+
+@pytest.mark.parametrize("pack,key,line", HEALTHY, ids=[f"{c[1]}-{i}" for i, c in enumerate(HEALTHY)])
+def test_pack_pattern_ignores_healthy_line(pack, key, line):
+    assert key not in analyze(line, resolve_packs([pack])).findings
+
+
+def test_offline_partitions_metric_with_a_nonzero_count_is_reported():
+    line = "WARN kafka.controller:type=KafkaController,name=OfflinePartitionsCount value=12"
+    assert "kafka_offline_partitions" in analyze(line, resolve_packs(["kafka"])).findings
