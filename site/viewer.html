@@ -376,6 +376,17 @@ details pre { margin: 8px 0 0; background: var(--code-bg); color: var(--code-fg)
       } else ai.appendChild(h('p', { class: 'muted', text: 'Not available: ' + d.ai.error }));
       right.appendChild(ai);
     }
+    if ((d.seen_before || []).length) {
+      var sb = h('ul', { class: 'plain steps' });
+      d.seen_before.forEach(function (m) {
+        var when = m.days_ago === 0 ? 'Today' : m.days_ago + (m.days_ago === 1 ? ' day ago' : ' days ago');
+        sb.appendChild(h('li', {},
+          h('div', {}, h('strong', { text: when }), ' on ' + String(m.target) + ' ', h('span', { class: 'muted num', text: '(' + Math.round((Number(m.similarity) || 0) * 100) + '% similar, id ' + String(m.id) + ')' })),
+          h('div', { class: m.note ? '' : 'muted', text: m.note ? 'Fix noted: ' + String(m.note) : 'No fix noted.' })));
+      });
+      var sc = card('Seen before', h('p', { class: 'muted', text: 'Past incidents with a similar pattern, from local history. Check the fix applies before reusing it.' }), sb);
+      right.appendChild(sc);
+    }
     if ((d.suggestions || []).length) {
       var ul = h('ul', { class: 'plain steps' });
       d.suggestions.forEach(function (s) { ul.appendChild(h('li', { text: String(s) })); });

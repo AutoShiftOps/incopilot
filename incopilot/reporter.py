@@ -83,7 +83,7 @@ def _code(text: str) -> str:
     return "`" + text.replace("`", "'").strip() + "`"
 
 
-def build_report_md(meta: dict, analysis: Analysis, commands, ai: AIResult | None = None) -> str:
+def build_report_md(meta: dict, analysis: Analysis, commands, ai: AIResult | None = None, seen=None) -> str:
     """Render the Markdown report."""
     st = analysis.stats
     out = [
@@ -122,6 +122,16 @@ def build_report_md(meta: dict, analysis: Analysis, commands, ai: AIResult | Non
                 "Earlier patterns are more likely causes; later ones are often knock-on effects.", ""]
         out += [f"{i}. {analysis.findings[k].title} ({_code(k)})" for i, k in enumerate(analysis.order, 1)]
 
+    if seen:
+        out += ["", "## Seen before", "",
+                "Past incidents with a similar pattern, from local history. "
+                "Similar is not the same: check the fix applies.", ""]
+        for m in seen:
+            when = "today" if m["days_ago"] == 0 else f"{m['days_ago']} day(s) ago"
+            fix = f"Fix noted: {m['note']}" if m["note"] else "No fix noted."
+            out.append(f"- **{when}** on {_code(m['target'])} ({round(m['similarity'] * 100)}% similar, "
+                       f"{m['severity']}, id {_code(m['id'])}). {fix}")
+
     out += ["", "## Suggested next steps", ""]
     out += [f"- {s}" for s in suggest_next_steps(analysis)]
 
@@ -151,7 +161,7 @@ def build_report_md(meta: dict, analysis: Analysis, commands, ai: AIResult | Non
     return "\n".join(out)
 
 
-def build_report_json(meta: dict, analysis: Analysis, commands, ai: AIResult | None = None) -> dict:
+def build_report_json(meta: dict, analysis: Analysis, commands, ai: AIResult | None = None, seen=None) -> dict:
     """Build the machine-readable report. The shape is versioned by `schema_version`."""
     return {
         "schema_version": SCHEMA_VERSION,
@@ -167,6 +177,7 @@ def build_report_json(meta: dict, analysis: Analysis, commands, ai: AIResult | N
             }
             for f in analysis.findings.values()
         },
+        "seen_before": list(seen or []),
         "top_repeating_lines": [{"count": n, "line": line} for n, line in analysis.top_lines],
         "suggestions": suggest_next_steps(analysis),
         "safe_next_commands": [{"title": t, "cmd": c} for t, c in commands],
