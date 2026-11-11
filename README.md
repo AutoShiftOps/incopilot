@@ -93,6 +93,36 @@ kubectl logs deploy/api | incopilot file --path -
 incopilot bundle --unit nginx --container my-api --pod deploy/api -n prod
 ```
 
+## Watch it live
+
+```bash
+incopilot watch k8s --pod deploy/api -n prod
+incopilot watch docker --container my-api --window 10
+incopilot watch file --path /var/log/app.log
+```
+
+```text
+Watching prod/deploy/api: last 5 min of logs, checked every 15s. Ctrl+C to stop.
+09:41:12  NEW          high     Connection limit reached (saturation) x2
+09:41:12  SEVERITY     none -> high
+09:41:31  NEW          critical Out of memory (saturation) x1
+09:41:31  SEVERITY     high -> critical
+09:41:31  SEEN BEFORE  3f9a1c2e, 12 days ago on prod/deploy/api (80% similar). Fix noted: raised DB pool size
+09:52:40  CLEARED               Connection limit reached
+```
+
+`watch` re-analyzes a sliding window and prints only what changed: a new finding, a severity change, a finding that cleared, or a match with a past incident. When you stop it, it writes the usual reports for the worst moment it saw and keeps one history record for the whole session.
+
+| Option | Purpose |
+|---|---|
+| `--window MINUTES` | How much recent log to analyze each time. Default 5 |
+| `--interval SECONDS` | How often to check. Default 15 |
+| `--duration SECONDS` | Stop after this long. Default: until Ctrl+C |
+| `--json` | One JSON event per line, for piping into other tools |
+| `--from-start` | For files: include what is already there. Default: only new lines |
+
+Everything stays on your machine. To run it unattended, use it as a systemd service or a Kubernetes sidecar with `--duration` unset.
+
 ## What you get
 
 `out/report.md` for people and `out/report.json` for pipelines (plus `out/report.html` with `--html`), containing:
@@ -188,6 +218,7 @@ cli.py ── collectors.py   journalctl / docker logs / kubectl logs / file  (r
        ── analyzer.py     patterns → findings, severity, golden signals, order of appearance
        ── redact.py       masks secrets before anything is written or sent
        ── ai.py           optional hypothesis from the redacted summary (stdlib HTTP, no SDK)
+       ── watch.py        follow a source, re-analyze a sliding window, report changes
        ── memory.py       incident fingerprints, local history, "seen before" matching
        ── reporter.py     report.md + report.json
        ── html.py         report.html: the viewer page with the report embedded

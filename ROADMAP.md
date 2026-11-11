@@ -27,7 +27,7 @@ Remaining: publish to PyPI, tag the release, turn on GitHub Pages, and test the 
 
 ## Phase 1: v0.3 Sharper triage
 
-- `incopilot watch`: continuous local triage that reports only what changed
+- `incopilot watch`: continuous local triage that reports only what changed (shipped)
 - Group multi-line stack traces into one event
 - Burst detection: when the error rate jumped, not only what appeared
 - Per-source timelines in `bundle`, to show which component failed first

@@ -3,9 +3,11 @@
 from __future__ import annotations
 
 import argparse
+import copy
 import json
 import re
 import sys
+import time
 from pathlib import Path
 
 from rich.console import Console
@@ -18,6 +20,7 @@ from .html import render_html
 from .patterns import PACKS, SEVERITY_RANK, resolve_packs
 from .redact import Redactor
 from .reporter import build_meta, build_report_json, build_report_md, safe_next_commands, write_outputs
+from .watch import MAX_FAILURES, FileFollower, Watcher
 
 EXIT_OK, EXIT_ERROR, EXIT_THRESHOLD = 0, 1, 3
 TIMELINE_ROWS = 10
@@ -75,27 +78,19 @@ def build_parser() -> argparse.ArgumentParser:
     ap.add_argument("--version", action="version", version=f"incopilot {__version__}")
     sub = ap.add_subparsers(dest="source", required=True, metavar="SOURCE")
 
-    j = sub.add_parser("journal", parents=[common], help="systemd journal (journalctl)")
-    j.add_argument("--unit", required=True, help="systemd unit, e.g. nginx")
-    j.add_argument("--since", default="30 min ago", help="e.g. '30 min ago' or '2026-03-01 10:00:00'")
+    _add_sources(sub, [common])
 
-    d = sub.add_parser("docker", parents=[common], help="docker container logs")
-    d.add_argument("--container", required=True, help="container name or ID")
-    d.add_argument("--since", default="1h", help="e.g. 1h, 30m, 2026-03-01T10:00:00")
-
-    k = sub.add_parser("k8s", parents=[common], help="Kubernetes pod logs (kubectl)")
-    kt = k.add_mutually_exclusive_group(required=True)
-    kt.add_argument("--pod", help="pod name, or a reference such as deploy/api")
-    kt.add_argument("-l", "--selector", help="label selector, e.g. app=api")
-    k.add_argument("-n", "--namespace")
-    k.add_argument("-c", "--container", help="default: all containers")
-    k.add_argument("--since", default="30m", help="e.g. 30m, 2h")
-    k.add_argument("--previous", action="store_true", help="logs of the previous (crashed) container")
-    k.add_argument("--context", help="kubeconfig context")
-    k.add_argument("--tail", type=int, default=5000, help="max lines per container (default: 5000)")
-
-    f = sub.add_parser("file", parents=[common], help="a log file, .gz file, or '-' for stdin")
-    f.add_argument("--path", required=True)
+    w = sub.add_parser("watch", help="follow a source and report what changes, until you stop it")
+    wopts = argparse.ArgumentParser(add_help=False)
+    g = wopts.add_argument_group("watch")
+    g.add_argument("--window", type=int, default=5, metavar="MINUTES",
+                   help="how much recent log to analyze each time (default: 5)")
+    g.add_argument("--interval", type=int, default=15, metavar="SECONDS",
+                   help="how often to check (default: 15)")
+    g.add_argument("--duration", type=int, default=0, metavar="SECONDS",
+                   help="stop after this long (default: run until Ctrl+C)")
+    ws = w.add_subparsers(dest="watch_source", required=True, metavar="SOURCE")
+    _add_sources(ws, [common, wopts], watch=True)
 
     b = sub.add_parser("bundle", parents=[common], help="several sources analyzed as one timeline")
     b.add_argument("--unit", help="systemd unit")
@@ -118,6 +113,36 @@ def build_parser() -> argparse.ArgumentParser:
     hf = hs.add_parser("forget", help="remove one incident from history")
     hf.add_argument("id")
     return ap
+
+
+def _add_sources(sub, parents, watch: bool = False) -> None:
+    """Define the single-source subcommands. In watch mode the time range comes from --window."""
+    j = sub.add_parser("journal", parents=parents, help="systemd journal (journalctl)")
+    j.add_argument("--unit", required=True, help="systemd unit, e.g. nginx")
+
+    d = sub.add_parser("docker", parents=parents, help="docker container logs")
+    d.add_argument("--container", required=True, help="container name or ID")
+
+    k = sub.add_parser("k8s", parents=parents, help="Kubernetes pod logs (kubectl)")
+    kt = k.add_mutually_exclusive_group(required=True)
+    kt.add_argument("--pod", help="pod name, or a reference such as deploy/api")
+    kt.add_argument("-l", "--selector", help="label selector, e.g. app=api")
+    k.add_argument("-n", "--namespace")
+    k.add_argument("-c", "--container", help="default: all containers")
+    k.add_argument("--context", help="kubeconfig context")
+    k.add_argument("--tail", type=int, default=5000, help="max lines per container (default: 5000)")
+
+    f = sub.add_parser("file", parents=parents,
+                       help="a log file" if watch else "a log file, .gz file, or '-' for stdin")
+    f.add_argument("--path", required=True)
+    if watch:
+        f.add_argument("--from-start", action="store_true",
+                       help="include what is already in the file (default: only new lines)")
+        return
+    j.add_argument("--since", default="30 min ago", help="e.g. '30 min ago' or '2026-03-01 10:00:00'")
+    d.add_argument("--since", default="1h", help="e.g. 1h, 30m, 2026-03-01T10:00:00")
+    k.add_argument("--since", default="30m", help="e.g. 30m, 2h")
+    k.add_argument("--previous", action="store_true", help="logs of the previous (crashed) container")
 
 
 def run_history(args) -> int:
@@ -254,11 +279,134 @@ def render(console: Console, analysis: Analysis, ai_result, paths) -> None:
         console.print(Text("\nSaved: " + ", ".join(paths.values())))
 
 
+def _print_event(console: Console, ev: dict) -> None:
+    """One line per change. Log-derived text is printed as plain text, never as markup."""
+    line = Text(f"{ev['at']}  ")
+    kind = ev["event"]
+    if kind == "new":
+        line.append("NEW          ", style="bold")
+        line.append(f"{ev['severity']:<9}", style=_STYLE[ev["severity"]])
+        line.append(f"{ev['title']} ({ev['signal']}) x{ev['count']}")
+    elif kind == "cleared":
+        line.append("CLEARED      ", style="green")
+        line.append(f"{'':<9}{ev['title']}")
+    elif kind == "severity":
+        line.append("SEVERITY     ", style="bold")
+        line.append(f"{ev['from']} -> ")
+        line.append(ev["to"], style=_STYLE[ev["to"]])
+    else:
+        when = "today" if ev["days_ago"] == 0 else f"{ev['days_ago']} day{'s' if ev['days_ago'] != 1 else ''} ago"
+        line.append("SEEN BEFORE  ", style="bold cyan")
+        line.append(f"{ev['id']}, {when} on {ev['target']} ({round(ev['similarity'] * 100)}% similar). ")
+        line.append(f"Fix noted: {ev['note']}" if ev["note"] else "No fix noted.")
+    console.print(line)
+
+
+def run_watch(args, sleep=time.sleep, clock=time.monotonic) -> int:
+    """Handle `incopilot watch <source> ...`."""
+    err, console = Console(stderr=True), Console()
+    source = args.watch_source
+    window = max(1, args.window)
+    interval = max(1, args.interval)
+    state = {"target": None, "ctx": {}}
+    try:
+        cfg = settings.load(args.config)
+        pack_names = [p.strip() for p in args.packs.split(",")] if args.packs else cfg.packs
+        patterns = resolve_packs(pack_names) + cfg.patterns
+        if source == "file":
+            if args.path == "-" or args.path.endswith(".gz"):
+                raise collectors.CollectorError("watch needs a regular file that is being written to")
+            poll = FileFollower(args.path, window * 60, clock, args.from_start).poll
+            state["target"] = args.path
+        else:
+            ns = copy.copy(args)
+            ns.source, ns.previous = source, False
+            ns.since = f"{window} min ago" if source == "journal" else f"{window}m"
+
+            def collect_once() -> str:
+                text, state["target"], _, state["ctx"] = collect(ns)
+                return collectors.tail_bytes(text, args.max_bytes)[0]
+
+            pending = [collect_once()]  # fail fast, and learn the target name
+
+            def poll() -> str:
+                return pending.pop() if pending else collect_once()
+    except (collectors.CollectorError, settings.SettingsError, ValueError) as exc:
+        err.print(Text(f"incopilot: {exc}", style="red"))
+        return EXIT_ERROR
+
+    redactor = Redactor(enabled=not args.no_redact, redact_ips=args.redact_ips, extra=cfg.redact_extra)
+    history_path = None if args.no_history else (Path(args.history) if args.history else memory.default_path())
+    watcher = Watcher(poll, patterns, cfg.noise, redactor, state["target"], source, history_path)
+    chatty = not args.json and not args.quiet
+    if chatty:
+        console.print(Text(f"Watching {state['target']}: last {window} min of logs, checked every {interval}s. "
+                           "Ctrl+C to stop."))
+    started, failures = clock(), 0
+    try:
+        while True:
+            try:
+                events = watcher.tick()
+                failures = 0
+            except collectors.CollectorError as exc:
+                failures += 1
+                err.print(Text(f"incopilot: {exc} ({failures}/{MAX_FAILURES})", style="yellow"))
+                if failures >= MAX_FAILURES:
+                    err.print(Text("incopilot: source unavailable, stopping", style="red"))
+                    return EXIT_ERROR
+                events = []
+            for ev in events:
+                if args.json:
+                    print(json.dumps(ev, ensure_ascii=False), flush=True)
+                elif chatty:
+                    _print_event(console, ev)
+            if args.duration and clock() - started >= args.duration:
+                break
+            sleep(interval)
+    except KeyboardInterrupt:
+        pass
+
+    peak = watcher.peak
+    if peak is None:
+        return EXIT_ERROR
+    peak.stats["truncated"] = False
+    meta = build_meta(f"watch {source}", state["target"], f"last {window} min, peak of {watcher.ticks} checks")
+    ai_result = None
+    if args.ai and not args.no_redact and peak.findings:
+        ai_result = ai.hypothesize(peak, meta, args.ai_provider or cfg.ai_provider,
+                                   args.ai_model or cfg.ai_model, timeout=args.timeout)
+    commands = safe_next_commands(state["ctx"])
+    seen = []
+    if history_path is not None and watcher.started_at:
+        seen = memory.matches_as_dicts(memory.find_similar(history_path, watcher.session_id))
+    report = build_report_json(meta, peak, commands, ai_result, seen)
+    paths = None
+    if not args.no_write:
+        try:
+            paths = write_outputs(args.out_dir, build_report_md(meta, peak, commands, ai_result, seen), report,
+                                  render_html(report) if args.html else None)
+        except OSError as exc:
+            err.print(Text(f"incopilot: cannot write reports: {exc}", style="red"))
+            return EXIT_ERROR
+    if chatty:
+        console.print(Text(f"\nStopped after {watcher.ticks} checks. Peak severity: {peak.severity}."))
+        if paths:
+            console.print(Text("Saved: " + ", ".join(paths.values())))
+        if watcher.started_at and history_path is not None:
+            console.print(Text(f"Remembered as {watcher.session_id}. When it is fixed: "
+                               f'incopilot history note {watcher.session_id} "what fixed it"'))
+    if args.fail_on and SEVERITY_RANK[peak.severity] >= SEVERITY_RANK[args.fail_on]:
+        return EXIT_THRESHOLD
+    return EXIT_OK
+
+
 def run(argv=None) -> int:
     """Run the CLI and return an exit code."""
     args = build_parser().parse_args(argv)
     if args.source == "history":
         return run_history(args)
+    if args.source == "watch":
+        return run_watch(args)
     err = Console(stderr=True)
     try:
         cfg = settings.load(args.config)
