@@ -7,13 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Fixed
-- Report viewer: the paste box was always open because a CSS rule overrode `hidden`; it now opens only from "Paste JSON". The header stays visible while scrolling and links to the website
-- Website: the timeline's end label overlapped the first row
+## [0.2.0] - 2026-11-12
+
+First release as **firstsignal** (formerly incopilot).
 
 ### Changed
 - **Renamed to firstsignal** (was incopilot): package, command, config file (`firstsignal.toml`), environment variables (`FIRSTSIGNAL_*`), history folder (`~/.firstsignal`) and website (https://firstsignal.autoshiftops.com/). The old command, variables, config file and history keep working for one release; the old command prints a note on stderr
 - New logo and banner in `docs/brand/`
+- JSON report has a new shape with `schema_version: "2"`
+- `bundle` accepts any mix of `--unit`, `--container`, `--pod` and `--path`
+- Shared options such as `--out-dir` are now given after the subcommand
+- Next-step commands are filled in with the targets that were analyzed
 
 ### Added
 - Website at https://firstsignal.autoshiftops.com/: sticky header with the current section highlighted, new sections for incident memory and `watch`, favicon, social preview card, 404 page, sitemap and robots.txt
@@ -25,10 +29,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Terminal output shows the golden-signals summary and an order-of-first-appearance table
 - Example report on the website at `site/viewer.html`
 - `ROADMAP.md` and `docs/PRODUCT_PLAN.md`
-
-## [0.2.0] - 2026-11-10
-
-### Added
 - Kubernetes source (`firstsignal k8s`) using `kubectl logs`, by pod, workload reference or label selector
 - Structured log support: JSON lines, logfmt levels, and kubectl/docker prefixes and timestamps
 - Severity for every finding and an overall severity for the run
@@ -40,13 +40,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `--fail-on` exit code for CI and scheduled runs, `--json` output, stdin and `.gz` input
 - Dockerfile, CI on Python 3.10 to 3.13, and a project website
 
-### Changed
-- JSON report has a new shape with `schema_version: "2"`
-- `bundle` accepts any mix of `--unit`, `--container`, `--pod` and `--path`
-- Shared options such as `--out-dir` are now given after the subcommand
-- Next-step commands are filled in with the targets that were analyzed
-
 ### Fixed
+- Report viewer: the paste box was always open because a CSS rule overrode `hidden`; it now opens only from "Paste JSON". The header stays visible while scrolling and links to the website
+- Website: the timeline's end label overlapped the first row
 - `docker logs` output written to stderr was dropped
 - `--max-bytes` truncated by characters and could cut a line in half
 - `http_5xx` rarely matched real access logs and could match unrelated numbers
