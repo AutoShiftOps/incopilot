@@ -1,0 +1,61 @@
+name: Bug report
+description: incopilot crashed, missed an obvious failure, or flagged something it shouldn't have.
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time. **Please redact secrets before pasting logs** — incopilot masks them in its reports, but this form doesn't.
+        Security issues go through [SECURITY.md](https://github.com/AutoShiftOps/incopilot/blob/main/SECURITY.md), not here.
+  - type: input
+    id: version
+    attributes:
+      label: incopilot version
+      description: Output of `incopilot --version`
+      placeholder: incopilot 0.2.0
+    validations:
+      required: true
+  - type: dropdown
+    id: source
+    attributes:
+      label: Source
+      options: [file, journal, docker, k8s, bundle, watch, history, other]
+    validations:
+      required: true
+  - type: input
+    id: command
+    attributes:
+      label: Command you ran
+      placeholder: incopilot file --path app.log --packs core,nginx
+    validations:
+      required: true
+  - type: dropdown
+    id: kind
+    attributes:
+      label: What kind of problem?
+      options:
+        - Crash or error message
+        - Missed a failure (false negative)
+        - Flagged something harmless (false positive)
+        - Wrong severity or signal
+        - Report / output looks wrong
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened, and what did you expect?
+    validations:
+      required: true
+  - type: textarea
+    id: sample
+    attributes:
+      label: Sample log lines (redacted)
+      description: The smallest set of lines that reproduces it. Shown as plain text.
+      render: text
+  - type: input
+    id: env
+    attributes:
+      label: Environment
+      placeholder: Ubuntu 24.04, Python 3.12

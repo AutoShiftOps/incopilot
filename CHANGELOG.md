@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Issue forms (bug report, feature request, new pattern or pack) and a pull request template
 - `incopilot watch <source>`: continuous local triage that prints only what changed, keeps one history record per session, and writes a final report when stopped
 - Incident memory: each run is remembered as a fingerprint, similar past incidents are shown as "Seen before", and `incopilot history list|note|forget` manages them. Stored locally with no log text
 - `--html` writes a self-contained `report.html` dashboard

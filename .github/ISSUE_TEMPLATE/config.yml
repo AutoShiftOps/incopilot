@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Report a security vulnerability
+    url: https://github.com/AutoShiftOps/incopilot/blob/main/SECURITY.md
+    about: Please report privately, not as a public issue. SECURITY.md explains how.

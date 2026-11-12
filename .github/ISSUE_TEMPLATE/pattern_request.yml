@@ -1,0 +1,42 @@
+name: New pattern or pack
+description: A failure incopilot should recognize, or a new pattern pack (e.g. redis, mysql).
+labels: ["enhancement", "area: analysis"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Good patterns are specific. Paste **real (redacted) lines** that should match, and if you can, lines that look similar but should **not** match.
+  - type: input
+    id: tech
+    attributes:
+      label: Technology
+      placeholder: Redis 7, MySQL 8, HAProxy…
+    validations:
+      required: true
+  - type: textarea
+    id: positive
+    attributes:
+      label: Lines that should match
+      render: text
+    validations:
+      required: true
+  - type: textarea
+    id: negative
+    attributes:
+      label: Similar lines that should NOT match
+      render: text
+  - type: dropdown
+    id: signal
+    attributes:
+      label: Golden signal
+      options: [errors, latency, saturation, traffic, not sure]
+  - type: dropdown
+    id: severity
+    attributes:
+      label: Suggested severity
+      options: [critical, high, medium, low, not sure]
+  - type: textarea
+    id: steps
+    attributes:
+      label: Safe next step a responder would take
+      description: Read-only only, e.g. "check `redis-cli INFO memory`".
