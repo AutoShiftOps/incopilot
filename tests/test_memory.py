@@ -1,7 +1,10 @@
 import json
 import os
 import stat
+import sys
 from datetime import datetime, timedelta, timezone
+
+import pytest
 
 from firstsignal import cli, memory
 from firstsignal.analyzer import analyze
@@ -25,6 +28,7 @@ def test_fingerprint_holds_shape_not_log_text(core, example_log, tmp_path):
         assert leaked not in raw
 
 
+@pytest.mark.skipif(sys.platform == "win32", reason="Windows does not apply POSIX file modes")
 def test_history_file_is_private(core, tmp_path):
     path = tmp_path / "d" / "h.jsonl"
     memory.remember(path, inc(core, POOL))
