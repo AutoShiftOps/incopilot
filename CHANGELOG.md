@@ -7,7 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- Report viewer: the paste box was always open because a CSS rule overrode `hidden`; it now opens only from "Paste JSON". The header stays visible while scrolling and links to the website
+- Website: the timeline's end label overlapped the first row
+
 ### Added
+- Website at https://incopilot.autoshiftops.com/: sticky header with the current section highlighted, new sections for incident memory and `watch`, favicon, social preview card, 404 page, sitemap and robots.txt
 - Issue forms (bug report, feature request, new pattern or pack) and a pull request template
 - `incopilot watch <source>`: continuous local triage that prints only what changed, keeps one history record per session, and writes a final report when stopped
 - Pattern packs for Redis, MySQL, HAProxy and Kafka (`--packs redis,mysql,haproxy,kafka`)

@@ -8,7 +8,7 @@ Read-only incident triage for logs. One command collects logs from **systemd, Do
 
 **Correlate and explain, never auto-act.** incopilot never changes the systems it reads. It works offline with no account and no agent. An AI hypothesis is available if you bring your own key, and it is off by default.
 
-Website: https://autoshiftops.github.io/incopilot/
+Website: https://incopilot.autoshiftops.com/
 
 ## Quick start
 
@@ -47,7 +47,7 @@ incopilot file --path examples/checkout-incident.log --html
 
 The terminal output already shows severity, golden signals, findings and the order of first appearance. Use `--html` when you need to share the result with people who were not at the terminal, for example in an incident channel or a postmortem.
 
-A [live example](https://autoshiftops.github.io/incopilot/viewer.html) is on the website.
+A [live example](https://incopilot.autoshiftops.com/viewer.html) is on the website.
 
 ## It remembers
 
@@ -240,9 +240,10 @@ See [CONTRIBUTING.md](CONTRIBUTING.md). Issues and pull requests are welcome.
 
 ## Website
 
-`site/` holds the landing page and the report viewer as plain HTML with no build step.
+Live at https://incopilot.autoshiftops.com/. `site/` holds the landing page, the report viewer and a 404 page as plain HTML with no build step.
 
-- **GitHub Pages:** the `Website` workflow deploys `site/` on every push to `main`. Turn Pages on once under Settings, Pages, with GitHub Actions as the source.
+- **GitHub Pages:** the `Website` workflow deploys `site/` on every push to `main` that touches `site/`. Under Settings, Pages, the source must be **GitHub Actions**; "Deploy from a branch" publishes the README instead. The custom domain is set on the same page.
+- **Social preview:** `site/og.png` (1200×630) is the card shown when the link is shared. Regenerate it if the headline changes.
 - **Vercel or Netlify:** import the repo, set the root directory to `site`, and leave the build command empty.
 
 `site/viewer.html` and `incopilot/viewer.html` are the same file; a test keeps them identical.

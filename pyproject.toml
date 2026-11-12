@@ -29,7 +29,7 @@ dependencies = [
 dev = ["pytest>=7.4", "pytest-cov>=4.1", "ruff>=0.6", "bandit>=1.7", "build>=1.0"]
 
 [project.urls]
-Homepage = "https://autoshiftops.github.io/incopilot/"
+Homepage = "https://incopilot.autoshiftops.com/"
 Repository = "https://github.com/AutoShiftOps/incopilot"
 Issues = "https://github.com/AutoShiftOps/incopilot/issues"
 

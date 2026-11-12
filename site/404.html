@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Page not found · incopilot</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<style>
+:root { --bg: #f2f5f7; --ink: #15202b; --muted: #55657a; --line: #d5dde5; --accent: #0a6a70; --accent-ink: #fff; --code-bg: #111a23; --code-fg: #dce6ee; --code-dim: #8499ab;
+  --body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif; --mono: "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace; }
+@media (prefers-color-scheme: dark) { :root { --bg: #0f151b; --ink: #e5ecf2; --muted: #9aabbb; --line: #2a3643; --accent: #5fc6c4; --accent-ink: #0b1418; --code-bg: #0a0f14; color-scheme: dark; } }
+* { box-sizing: border-box; }
+body { margin: 0; min-height: 100vh; display: grid; place-items: center; background: var(--bg); color: var(--ink); font: 400 16px/1.6 var(--body); padding: 24px 16px; }
+main { max-width: 560px; width: 100%; display: flex; flex-direction: column; gap: 18px; }
+.brand { font: 500 1rem var(--mono); color: var(--ink); text-decoration: none; display: inline-flex; gap: 8px; align-items: center; }
+.brand span { color: var(--accent); }
+h1 { margin: 0; font-size: clamp(1.8rem, 5vw, 2.4rem); line-height: 1.15; }
+p { margin: 0; color: var(--muted); }
+pre { margin: 0; background: var(--code-bg); color: var(--code-fg); border-radius: 8px; padding: 14px 16px; font: 400 0.85rem/1.7 var(--mono); overflow-x: auto; }
+pre .c { color: var(--code-dim); }
+.links { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+.btn { background: var(--accent); color: var(--accent-ink); padding: 9px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; }
+a { color: var(--accent); }
+</style>
+</head>
+<body>
+<main>
+  <a class="brand" href="/"><img src="/favicon.svg" alt="" width="20" height="20">in<span>copilot</span></a>
+  <pre><span class="c">$ incopilot file --path this-page.log</span>
+Overall severity: <b>LOW</b>
+1 finding: page not found (404)
+First to appear: a link that pointed somewhere that is not here</pre>
+  <h1>That page isn't here.</h1>
+  <p>It may have moved, or the link was mistyped. Nothing else is wrong.</p>
+  <div class="links">
+    <a class="btn" href="/">Go to the homepage</a>
+    <a href="/viewer.html">See an example report</a>
+    <a href="https://github.com/AutoShiftOps/incopilot">GitHub</a>
+  </div>
+</main>
+</body>
+</html>
