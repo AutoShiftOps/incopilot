@@ -233,3 +233,15 @@ def test_one_shot_sources_still_accept_since_and_previous():
     assert args.since == "2h" and args.previous
     with pytest.raises(SystemExit):
         cli.build_parser().parse_args(["watch", "k8s", "--pod", "a", "--since", "2h"])
+
+
+def test_follower_handles_crlf_even_when_split_across_reads(tmp_path):
+    log, clock = tmp_path / "win.log", Clock()
+    log.write_bytes(b"")
+    f = FileFollower(str(log), 600, clock)
+    with open(log, "ab") as fh:
+        fh.write(b"ERROR a\r")
+    assert f.poll() == ""
+    with open(log, "ab") as fh:
+        fh.write(b"\nERROR b\r\n")
+    assert f.poll() == "ERROR a\nERROR b"

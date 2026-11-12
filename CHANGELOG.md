@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- Log files with Windows (CRLF) line endings: `file` and `watch` no longer keep a stray `\r` at the end of each line
+
 ### Added
 - CI runs the tests on macOS and Windows as well as Linux
 - README: platform support table and Windows install tips; install command is now `pip install firstsignal`
