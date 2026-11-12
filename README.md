@@ -19,7 +19,7 @@ Website: https://firstsignal.autoshiftops.com/
 ## Quick start
 
 ```bash
-pip install git+https://github.com/AutoShiftOps/firstsignal
+pip install firstsignal          # or: pipx install firstsignal
 
 # try it on the bundled example incident
 git clone https://github.com/AutoShiftOps/firstsignal && cd firstsignal
@@ -41,6 +41,30 @@ First to appear: Slow operations
 ```
 
 The report shows that slow queries came first, then the connection pool filled, then timeouts and 5xx, and the out-of-memory kill came last. That ordering is the point: the loudest error is often not the cause.
+
+### Platforms
+
+Pure Python with one dependency, so it installs on Linux, macOS and Windows (Python 3.10 to 3.13). CI runs the tests on all three. What differs is which log sources each system has:
+
+| Source | Linux | macOS | Windows |
+|---|---|---|---|
+| `file`, stdin, `bundle --path` | yes | yes | yes |
+| `docker` | yes | yes, with Docker Desktop | yes, with Docker Desktop |
+| `k8s` | yes | yes, with `kubectl` configured | yes, with `kubectl` configured |
+| `journal` (systemd) | yes | no systemd | no systemd |
+| `watch`, `--html`, history, `--ai` | yes | yes | yes |
+
+`docker` and `k8s` call the `docker` and `kubectl` commands, so they work from a laptop pointed at a remote host or cluster. On Windows the history file is not restricted to your account, because Windows does not apply POSIX file modes; it holds pattern names, counts, targets and your notes, never log text.
+
+**Windows install tips.** If `pip install` fails with `Failed to write executable` or `WinError 2`, Python is installed system-wide and pip cannot write to its `Scripts` folder. Use one of:
+
+```powershell
+pipx install firstsignal                      # recommended: isolated, on PATH
+pip install --user firstsignal                # per-user install
+py -m venv .venv; .venv\Scripts\activate; pip install firstsignal
+```
+
+`py -m firstsignal ...` runs it even when the `Scripts` folder is not on PATH.
 
 ## See it as a dashboard
 
@@ -231,7 +255,7 @@ cli.py ── collectors.py   journalctl / docker logs / kubectl logs / file  (r
        ── patterns.py     built-in packs      settings.py   firstsignal.toml
 ```
 
-One runtime dependency (`rich`). Python 3.10 to 3.13.
+One runtime dependency (`rich`). Python 3.10 to 3.13 on Linux, macOS and Windows.
 
 ## Development
 

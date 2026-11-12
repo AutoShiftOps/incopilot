@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- CI runs the tests on macOS and Windows as well as Linux
+- README: platform support table and Windows install tips; install command is now `pip install firstsignal`
+
 ## [0.2.0] - 2026-11-12
 
 First release as **firstsignal** (formerly incopilot).
