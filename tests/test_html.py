@@ -2,8 +2,8 @@ import json
 import re
 from pathlib import Path
 
-from incopilot import cli
-from incopilot.html import render_html
+from firstsignal import cli
+from firstsignal.html import render_html
 
 ROOT = Path(__file__).resolve().parent.parent
 SLOT = re.compile(r'<script id="report-data" type="application/json">(.*?)</script>', re.S)
@@ -11,11 +11,11 @@ SAMPLE = re.compile(r'<script id="sample-data" type="application/json">(.*?)</sc
 
 
 def test_site_and_packaged_viewer_are_the_same_file():
-    assert (ROOT / "site" / "viewer.html").read_text() == (ROOT / "incopilot" / "viewer.html").read_text()
+    assert (ROOT / "site" / "viewer.html").read_text() == (ROOT / "firstsignal" / "viewer.html").read_text()
 
 
 def test_bundled_sample_is_a_valid_report():
-    page = (ROOT / "incopilot" / "viewer.html").read_text()
+    page = (ROOT / "firstsignal" / "viewer.html").read_text()
     sample = json.loads(SAMPLE.search(page).group(1))
     assert sample["schema_version"] == "2" and sample["severity"] == "critical"
     assert SLOT.search(page).group(1) == "null"

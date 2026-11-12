@@ -3,12 +3,12 @@ import json
 
 import pytest
 
-from incopilot import __version__, ai, cli, collectors
+from firstsignal import __version__, ai, cli, collectors
 
 
 @pytest.fixture(autouse=True)
 def isolated(tmp_path, monkeypatch):
-    monkeypatch.chdir(tmp_path)  # no stray incopilot.toml, reports land in tmp
+    monkeypatch.chdir(tmp_path)  # no stray firstsignal.toml, reports land in tmp
 
 
 def test_version(capsys):
@@ -72,7 +72,7 @@ def test_packs_option(tmp_path, capsys):
 
 
 def test_config_file_patterns(tmp_path, capsys):
-    (tmp_path / "incopilot.toml").write_text(
+    (tmp_path / "firstsignal.toml").write_text(
         '[[patterns]]\nkey = "ledger"\nregex = "ledger mismatch"\nseverity = "critical"\n')
     log = tmp_path / "a.log"
     log.write_text("WARN ledger mismatch\n")

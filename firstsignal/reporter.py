@@ -12,7 +12,7 @@ from .ai import AIResult
 from .analyzer import Analysis
 
 SCHEMA_VERSION = "2"
-SAFETY_NOTE = "Read-only. incopilot collects and explains; it never changes the systems it reads."
+SAFETY_NOTE = "Read-only. firstsignal collects and explains; it never changes the systems it reads."
 _ICON = {"critical": "🔴", "high": "🟠", "medium": "🟡", "low": "🔵", "none": "🟢"}
 
 _HOST_CHECKS = [
@@ -89,7 +89,7 @@ def build_report_md(meta: dict, analysis: Analysis, commands, ai: AIResult | Non
     out = [
         "# Incident triage report", "",
         f"**Overall severity: {_ICON[analysis.severity]} {analysis.severity.upper()}**", "",
-        f"- Generated: {meta['generated_at']} (incopilot {meta['tool_version']})",
+        f"- Generated: {meta['generated_at']} (firstsignal {meta['tool_version']})",
         f"- Source: {meta['source']}",
         f"- Target: {meta['target']}",
         f"- Window: {meta['since']}",

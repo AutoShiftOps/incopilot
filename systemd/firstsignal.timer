@@ -1,10 +1,10 @@
 [Unit]
-Description=Run incopilot triage every 10 minutes
+Description=Run firstsignal triage every 10 minutes
 
 [Timer]
 OnBootSec=2min
 OnUnitActiveSec=10min
-Unit=incopilot.service
+Unit=firstsignal.service
 
 [Install]
 WantedBy=timers.target

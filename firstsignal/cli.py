@@ -1,10 +1,11 @@
-"""Command-line interface for incopilot."""
+"""Command-line interface for firstsignal."""
 
 from __future__ import annotations
 
 import argparse
 import copy
 import json
+import os
 import re
 import sys
 import time
@@ -53,14 +54,14 @@ def build_parser() -> argparse.ArgumentParser:
     g = common.add_argument_group("analysis")
     g.add_argument("--packs", default=None,
                    help=f"comma-separated pattern packs: {', '.join(PACKS)}, all (default: core)")
-    g.add_argument("--config", help="path to incopilot.toml (default: ./incopilot.toml if present)")
+    g.add_argument("--config", help="path to firstsignal.toml (default: ./firstsignal.toml if present)")
     g.add_argument("--max-bytes", type=int, default=collectors.DEFAULT_MAX_BYTES,
                    help="analyze only the last N bytes of input (default: 5000000)")
     g.add_argument("--timeout", type=int, default=collectors.DEFAULT_TIMEOUT,
                    help="seconds to wait for journalctl, docker or kubectl (default: 60)")
     g = common.add_argument_group("incident memory")
     g.add_argument("--no-history", action="store_true", help="do not record this run or look for past matches")
-    g.add_argument("--history", metavar="FILE", help="history file (default: ~/.incopilot/history.jsonl)")
+    g.add_argument("--history", metavar="FILE", help="history file (default: ~/.firstsignal/history.jsonl)")
     g = common.add_argument_group("privacy")
     g.add_argument("--no-redact", action="store_true", help="do not mask secrets in reports")
     g.add_argument("--redact-ips", action="store_true", help="also mask IPv4 addresses")
@@ -71,11 +72,11 @@ def build_parser() -> argparse.ArgumentParser:
     g.add_argument("--ai-model", help="model name (required for openai and ollama)")
 
     ap = argparse.ArgumentParser(
-        prog="incopilot",
+        prog="firstsignal",
         description="Read-only incident triage: collect logs, map them to the Four Golden Signals, "
                     "and write a report with safe next steps.",
     )
-    ap.add_argument("--version", action="version", version=f"incopilot {__version__}")
+    ap.add_argument("--version", action="version", version=f"firstsignal {__version__}")
     sub = ap.add_subparsers(dest="source", required=True, metavar="SOURCE")
 
     _add_sources(sub, [common])
@@ -103,7 +104,7 @@ def build_parser() -> argparse.ArgumentParser:
     b.add_argument("--path", action="append", default=[], help="log file (repeatable)")
 
     h = sub.add_parser("history", help="list remembered incidents, add a note, or forget one")
-    h.add_argument("--history", metavar="FILE", help="history file (default: ~/.incopilot/history.jsonl)")
+    h.add_argument("--history", metavar="FILE", help="history file (default: ~/.firstsignal/history.jsonl)")
     hs = h.add_subparsers(dest="history_cmd", required=True, metavar="ACTION")
     hl = hs.add_parser("list", help="show remembered incidents, newest first")
     hl.add_argument("--limit", type=int, default=20)
@@ -146,7 +147,7 @@ def _add_sources(sub, parents, watch: bool = False) -> None:
 
 
 def run_history(args) -> int:
-    """Handle `incopilot history ...`."""
+    """Handle `firstsignal history ...`."""
     path = Path(args.history) if args.history else memory.default_path()
     console, err = Console(), Console(stderr=True)
     if args.history_cmd == "list":
@@ -165,12 +166,12 @@ def run_history(args) -> int:
     if args.history_cmd == "note":
         hit = memory.set_note(path, args.id, args.text)
         if hit is None:
-            err.print(Text(f"incopilot: no incident with id {args.id}", style="red"))
+            err.print(Text(f"firstsignal: no incident with id {args.id}", style="red"))
             return EXIT_ERROR
         console.print(Text(f"Noted on {hit.id}."))
         return EXIT_OK
     if not memory.forget(path, args.id):
-        err.print(Text(f"incopilot: no incident with id {args.id}", style="red"))
+        err.print(Text(f"firstsignal: no incident with id {args.id}", style="red"))
         return EXIT_ERROR
     console.print(Text(f"Forgot {args.id}."))
     return EXIT_OK
@@ -233,7 +234,7 @@ def render_memory(console: Console, recorded, matches) -> None:
             console.print(Text(f"      {'Fix noted: ' + inc.note if inc.note else 'No fix noted.'}"))
     if recorded is not None:
         console.print(Text(f"\nRemembered as {recorded.id}. When it is fixed: "
-                           f'incopilot history note {recorded.id} "what fixed it"'))
+                           f'firstsignal history note {recorded.id} "what fixed it"'))
 
 
 def render(console: Console, analysis: Analysis, ai_result, paths) -> None:
@@ -303,7 +304,7 @@ def _print_event(console: Console, ev: dict) -> None:
 
 
 def run_watch(args, sleep=time.sleep, clock=time.monotonic) -> int:
-    """Handle `incopilot watch <source> ...`."""
+    """Handle `firstsignal watch <source> ...`."""
     err, console = Console(stderr=True), Console()
     source = args.watch_source
     window = max(1, args.window)
@@ -332,7 +333,7 @@ def run_watch(args, sleep=time.sleep, clock=time.monotonic) -> int:
             def poll() -> str:
                 return pending.pop() if pending else collect_once()
     except (collectors.CollectorError, settings.SettingsError, ValueError) as exc:
-        err.print(Text(f"incopilot: {exc}", style="red"))
+        err.print(Text(f"firstsignal: {exc}", style="red"))
         return EXIT_ERROR
 
     redactor = Redactor(enabled=not args.no_redact, redact_ips=args.redact_ips, extra=cfg.redact_extra)
@@ -350,9 +351,9 @@ def run_watch(args, sleep=time.sleep, clock=time.monotonic) -> int:
                 failures = 0
             except collectors.CollectorError as exc:
                 failures += 1
-                err.print(Text(f"incopilot: {exc} ({failures}/{MAX_FAILURES})", style="yellow"))
+                err.print(Text(f"firstsignal: {exc} ({failures}/{MAX_FAILURES})", style="yellow"))
                 if failures >= MAX_FAILURES:
-                    err.print(Text("incopilot: source unavailable, stopping", style="red"))
+                    err.print(Text("firstsignal: source unavailable, stopping", style="red"))
                     return EXIT_ERROR
                 events = []
             for ev in events:
@@ -386,7 +387,7 @@ def run_watch(args, sleep=time.sleep, clock=time.monotonic) -> int:
             paths = write_outputs(args.out_dir, build_report_md(meta, peak, commands, ai_result, seen), report,
                                   render_html(report) if args.html else None)
         except OSError as exc:
-            err.print(Text(f"incopilot: cannot write reports: {exc}", style="red"))
+            err.print(Text(f"firstsignal: cannot write reports: {exc}", style="red"))
             return EXIT_ERROR
     if chatty:
         console.print(Text(f"\nStopped after {watcher.ticks} checks. Peak severity: {peak.severity}."))
@@ -394,7 +395,7 @@ def run_watch(args, sleep=time.sleep, clock=time.monotonic) -> int:
             console.print(Text("Saved: " + ", ".join(paths.values())))
         if watcher.started_at and history_path is not None:
             console.print(Text(f"Remembered as {watcher.session_id}. When it is fixed: "
-                               f'incopilot history note {watcher.session_id} "what fixed it"'))
+                               f'firstsignal history note {watcher.session_id} "what fixed it"'))
     if args.fail_on and SEVERITY_RANK[peak.severity] >= SEVERITY_RANK[args.fail_on]:
         return EXIT_THRESHOLD
     return EXIT_OK
@@ -414,7 +415,7 @@ def run(argv=None) -> int:
         patterns = resolve_packs(pack_names) + cfg.patterns
         text, target, since, ctx = collect(args)
     except (collectors.CollectorError, settings.SettingsError, ValueError) as exc:
-        err.print(Text(f"incopilot: {exc}", style="red"))
+        err.print(Text(f"firstsignal: {exc}", style="red"))
         return EXIT_ERROR
 
     text, truncated = collectors.tail_bytes(text, args.max_bytes)
@@ -426,7 +427,7 @@ def run(argv=None) -> int:
     ai_result = None
     if args.ai:
         if args.no_redact:
-            err.print(Text("incopilot: --ai is ignored with --no-redact (unredacted logs are never sent)",
+            err.print(Text("firstsignal: --ai is ignored with --no-redact (unredacted logs are never sent)",
                            style="yellow"))
         else:
             ai_result = ai.hypothesize(analysis, meta, args.ai_provider or cfg.ai_provider,
@@ -439,7 +440,7 @@ def run(argv=None) -> int:
                 Path(args.history) if args.history else memory.default_path(),
                 memory.from_analysis(analysis, target, args.source))
         except OSError as exc:
-            err.print(Text(f"incopilot: history not updated: {exc}", style="yellow"))
+            err.print(Text(f"firstsignal: history not updated: {exc}", style="yellow"))
     seen = memory.matches_as_dicts(matches)
 
     commands = safe_next_commands(ctx)
@@ -450,7 +451,7 @@ def run(argv=None) -> int:
             paths = write_outputs(args.out_dir, build_report_md(meta, analysis, commands, ai_result, seen), report,
                                   render_html(report) if args.html else None)
         except OSError as exc:
-            err.print(Text(f"incopilot: cannot write reports: {exc}", style="red"))
+            err.print(Text(f"firstsignal: cannot write reports: {exc}", style="red"))
             return EXIT_ERROR
 
     if args.json:
@@ -466,6 +467,9 @@ def run(argv=None) -> int:
 
 def main() -> None:
     """Console-script entry point."""
+    if os.path.basename(sys.argv[0]).startswith("incopilot"):
+        print("note: incopilot is now firstsignal. The incopilot command still works but will be "
+              "removed in a future release.", file=sys.stderr)
     sys.exit(run())
 
 

@@ -1,6 +1,6 @@
-# Contributing to incopilot
+# Contributing to firstsignal
 
-Thank you for your interest in contributing to **incopilot**! This document provides guidelines and instructions for contributing to the project.
+Thank you for your interest in contributing to **firstsignal**! This document provides guidelines and instructions for contributing to the project.
 
 ## Code of Conduct
 
@@ -32,8 +32,8 @@ Before creating a bug report, please check the issue list to see if the bug has 
 
 1. **Fork the repository** and create a feature branch:
    ```bash
-   git clone https://github.com/AutoShiftOps/incopilot.git
-   cd incopilot
+   git clone https://github.com/AutoShiftOps/firstsignal.git
+   cd firstsignal
    git checkout -b feature/your-feature-name
    ```
 
@@ -48,7 +48,7 @@ Before creating a bug report, please check the issue list to see if the bug has 
    ```bash
    pytest --cov
    ruff check .
-   bandit -q -r incopilot
+   bandit -q -r firstsignal
    ```
 
 4. **Commit with clear messages:**

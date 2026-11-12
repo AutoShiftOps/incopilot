@@ -17,7 +17,7 @@
 - [ ] Still read-only: nothing new executes, restarts, deletes, or writes outside `--out-dir` / the history file
 - [ ] No secrets, real hostnames, or customer data in tests or examples
 - [ ] `CHANGELOG.md` updated under *Unreleased* (if user-facing)
-- [ ] If `viewer.html` changed, `incopilot/viewer.html` and `site/viewer.html` are still identical
+- [ ] If `viewer.html` changed, `firstsignal/viewer.html` and `site/viewer.html` are still identical
 
 ## How I tested it
 

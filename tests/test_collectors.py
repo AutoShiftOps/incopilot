@@ -3,8 +3,8 @@ import subprocess
 
 import pytest
 
-from incopilot import collectors
-from incopilot.collectors import CollectorError
+from firstsignal import collectors
+from firstsignal.collectors import CollectorError
 
 
 class FakeProc:

@@ -1,4 +1,4 @@
-"""incopilot watch: follow a source, re-analyze a sliding window, and report only what changes."""
+"""firstsignal watch: follow a source, re-analyze a sliding window, and report only what changes."""
 
 from __future__ import annotations
 

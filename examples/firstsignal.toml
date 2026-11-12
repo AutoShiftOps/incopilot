@@ -1,4 +1,4 @@
-# Copy to ./incopilot.toml, or pass with --config.
+# Copy to ./firstsignal.toml, or pass with --config.
 
 # Pattern packs to load: core, nginx, postgres, node, kubernetes, jvm, or "all".
 packs = ["core", "nginx", "postgres"]

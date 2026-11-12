@@ -11,12 +11,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Report viewer: the paste box was always open because a CSS rule overrode `hidden`; it now opens only from "Paste JSON". The header stays visible while scrolling and links to the website
 - Website: the timeline's end label overlapped the first row
 
+### Changed
+- **Renamed to firstsignal** (was incopilot): package, command, config file (`firstsignal.toml`), environment variables (`FIRSTSIGNAL_*`), history folder (`~/.firstsignal`) and website (https://firstsignal.autoshiftops.com/). The old command, variables, config file and history keep working for one release; the old command prints a note on stderr
+- New logo and banner in `docs/brand/`
+
 ### Added
-- Website at https://incopilot.autoshiftops.com/: sticky header with the current section highlighted, new sections for incident memory and `watch`, favicon, social preview card, 404 page, sitemap and robots.txt
+- Website at https://firstsignal.autoshiftops.com/: sticky header with the current section highlighted, new sections for incident memory and `watch`, favicon, social preview card, 404 page, sitemap and robots.txt
 - Issue forms (bug report, feature request, new pattern or pack) and a pull request template
-- `incopilot watch <source>`: continuous local triage that prints only what changed, keeps one history record per session, and writes a final report when stopped
+- `firstsignal watch <source>`: continuous local triage that prints only what changed, keeps one history record per session, and writes a final report when stopped
 - Pattern packs for Redis, MySQL, HAProxy and Kafka (`--packs redis,mysql,haproxy,kafka`)
-- Incident memory: each run is remembered as a fingerprint, similar past incidents are shown as "Seen before", and `incopilot history list|note|forget` manages them. Stored locally with no log text
+- Incident memory: each run is remembered as a fingerprint, similar past incidents are shown as "Seen before", and `firstsignal history list|note|forget` manages them. Stored locally with no log text
 - `--html` writes a self-contained `report.html` dashboard
 - Terminal output shows the golden-signals summary and an order-of-first-appearance table
 - Example report on the website at `site/viewer.html`
@@ -25,14 +29,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.2.0] - 2026-11-10
 
 ### Added
-- Kubernetes source (`incopilot k8s`) using `kubectl logs`, by pod, workload reference or label selector
+- Kubernetes source (`firstsignal k8s`) using `kubectl logs`, by pod, workload reference or label selector
 - Structured log support: JSON lines, logfmt levels, and kubectl/docker prefixes and timestamps
 - Severity for every finding and an overall severity for the run
 - Order of first appearance, to separate likely causes from knock-on effects
 - Secret redaction in all reports, on by default (`--no-redact`, `--redact-ips`)
 - Optional AI hypothesis (`--ai`) with your own key: Anthropic, OpenAI-compatible endpoints, or local Ollama
 - Pattern packs (`--packs`): core, nginx, postgres, node, kubernetes, jvm
-- `incopilot.toml` for custom patterns, noise filters and redaction rules
+- `firstsignal.toml` for custom patterns, noise filters and redaction rules
 - `--fail-on` exit code for CI and scheduled runs, `--json` output, stdin and `.gz` input
 - Dockerfile, CI on Python 3.10 to 3.13, and a project website
 
@@ -49,7 +53,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The test suite imported a Click entry point that did not exist
 
 ### Removed
-- `config.py` and `config_extended.py`, replaced by pattern packs and `incopilot.toml`
+- `config.py` and `config_extended.py`, replaced by pattern packs and `firstsignal.toml`
 - Sample reports committed under `out/`
 
 ## [0.1.0] - 2026-07-08

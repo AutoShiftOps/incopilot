@@ -1,23 +1,29 @@
-# incopilot
+<p align="center">
+  <a href="https://firstsignal.autoshiftops.com/"><img src="https://raw.githubusercontent.com/AutoShiftOps/firstsignal/main/docs/brand/firstsignal-banner.png" alt="firstsignal: the loudest error is rarely the first one" width="820"></a>
+</p>
+
+# firstsignal
+
+> Formerly **incopilot**. The `incopilot` command, `INCOPILOT_*` variables, `incopilot.toml` and `~/.incopilot` history still work for one release.
 
 Read-only incident triage for logs. One command collects logs from **systemd, Docker, Kubernetes or a file**, maps what it finds to the **Four Golden Signals**, and writes a report with the order things went wrong and safe checks to run next.
 
-[![CI](https://github.com/AutoShiftOps/incopilot/actions/workflows/ci.yml/badge.svg)](https://github.com/AutoShiftOps/incopilot/actions/workflows/ci.yml)
+[![CI](https://github.com/AutoShiftOps/firstsignal/actions/workflows/ci.yml/badge.svg)](https://github.com/AutoShiftOps/firstsignal/actions/workflows/ci.yml)
 ![python](https://img.shields.io/badge/python-3.10%E2%80%933.13-3776AB)
 ![license](https://img.shields.io/badge/license-MIT-blue)
 
-**Correlate and explain, never auto-act.** incopilot never changes the systems it reads. It works offline with no account and no agent. An AI hypothesis is available if you bring your own key, and it is off by default.
+**Correlate and explain, never auto-act.** firstsignal never changes the systems it reads. It works offline with no account and no agent. An AI hypothesis is available if you bring your own key, and it is off by default.
 
-Website: https://incopilot.autoshiftops.com/
+Website: https://firstsignal.autoshiftops.com/
 
 ## Quick start
 
 ```bash
-pip install git+https://github.com/AutoShiftOps/incopilot
+pip install git+https://github.com/AutoShiftOps/firstsignal
 
 # try it on the bundled example incident
-git clone https://github.com/AutoShiftOps/incopilot && cd incopilot
-incopilot file --path examples/checkout-incident.log --packs core,nginx
+git clone https://github.com/AutoShiftOps/firstsignal && cd firstsignal
+firstsignal file --path examples/checkout-incident.log --packs core,nginx
 cat out/report.md
 ```
 
@@ -39,7 +45,7 @@ The report shows that slow queries came first, then the connection pool filled, 
 ## See it as a dashboard
 
 ```bash
-incopilot file --path examples/checkout-incident.log --html
+firstsignal file --path examples/checkout-incident.log --html
 # open out/report.html in a browser
 ```
 
@@ -47,27 +53,27 @@ incopilot file --path examples/checkout-incident.log --html
 
 The terminal output already shows severity, golden signals, findings and the order of first appearance. Use `--html` when you need to share the result with people who were not at the terminal, for example in an incident channel or a postmortem.
 
-A [live example](https://incopilot.autoshiftops.com/viewer.html) is on the website.
+A [live example](https://firstsignal.autoshiftops.com/viewer.html) is on the website.
 
 ## It remembers
 
-Every run with findings is remembered as a fingerprint: which patterns fired, in what order, on which target. The next time something similar happens, incopilot tells you, along with what fixed it last time.
+Every run with findings is remembered as a fingerprint: which patterns fired, in what order, on which target. The next time something similar happens, firstsignal tells you, along with what fixed it last time.
 
 ```text
 Seen before
   3f9a1c2e  12 days ago on prod/deploy/api  (100% similar, critical)
       Fix noted: raised DB pool size from 10 to 30, added index on orders.customer_id
 
-Remembered as 8b21d0aa. When it is fixed: incopilot history note 8b21d0aa "what fixed it"
+Remembered as 8b21d0aa. When it is fixed: firstsignal history note 8b21d0aa "what fixed it"
 ```
 
 ```bash
-incopilot history list                         # what is remembered
-incopilot history note 8b21d0aa "what fixed it"
-incopilot history forget 8b21d0aa
+firstsignal history list                         # what is remembered
+firstsignal history note 8b21d0aa "what fixed it"
+firstsignal history forget 8b21d0aa
 ```
 
-- **Local and private.** History is one file, `~/.incopilot/history.jsonl`, readable only by you. Set `INCOPILOT_HISTORY` or `--history FILE` to move it, for example into a repo your team shares.
+- **Local and private.** History is one file, `~/.firstsignal/history.jsonl`, readable only by you. Set `FIRSTSIGNAL_HISTORY` or `--history FILE` to move it, for example into a repo your team shares.
 - **No log text is stored.** Only pattern names, counts, the target, the time and your note.
 - **Matching is deterministic.** The same two incidents always get the same score. No model is involved.
 - Re-running during the same incident updates one record instead of creating many. `--no-history` turns it off.
@@ -76,29 +82,29 @@ incopilot history forget 8b21d0aa
 
 ```bash
 # systemd journal
-incopilot journal --unit nginx --since "30 min ago"
+firstsignal journal --unit nginx --since "30 min ago"
 
 # Docker container (stdout and stderr)
-incopilot docker --container my-api --since 1h
+firstsignal docker --container my-api --since 1h
 
 # Kubernetes: a pod, a workload, or a label selector
-incopilot k8s --pod deploy/api -n prod --since 30m
-incopilot k8s -l app=api -n prod --previous        # the container that just crashed
+firstsignal k8s --pod deploy/api -n prod --since 30m
+firstsignal k8s -l app=api -n prod --previous        # the container that just crashed
 
 # a file, a .gz file, or stdin
-incopilot file --path /var/log/app.log
-kubectl logs deploy/api | incopilot file --path -
+firstsignal file --path /var/log/app.log
+kubectl logs deploy/api | firstsignal file --path -
 
 # several sources as one timeline
-incopilot bundle --unit nginx --container my-api --pod deploy/api -n prod
+firstsignal bundle --unit nginx --container my-api --pod deploy/api -n prod
 ```
 
 ## Watch it live
 
 ```bash
-incopilot watch k8s --pod deploy/api -n prod
-incopilot watch docker --container my-api --window 10
-incopilot watch file --path /var/log/app.log
+firstsignal watch k8s --pod deploy/api -n prod
+firstsignal watch docker --container my-api --window 10
+firstsignal watch file --path /var/log/app.log
 ```
 
 ```text
@@ -139,12 +145,12 @@ Plain text, JSON lines, logfmt and `kubectl --prefix --timestamps` output are al
 
 ## Options
 
-Options go after the source, for example `incopilot file --path app.log --json`.
+Options go after the source, for example `firstsignal file --path app.log --json`.
 
 | Option | Purpose |
 |---|---|
 | `--packs core,nginx` | Pattern packs: `core`, `nginx`, `postgres`, `node`, `kubernetes`, `jvm`, `redis`, `mysql`, `haproxy`, `kafka`, `all`. Default `core` |
-| `--config FILE` | Settings file. `./incopilot.toml` is loaded automatically if present |
+| `--config FILE` | Settings file. `./firstsignal.toml` is loaded automatically if present |
 | `--out-dir DIR` | Where reports are written. Default `out` |
 | `--html` | Also write `report.html`, a self-contained dashboard |
 | `--json` | Print the JSON report to stdout and nothing else |
@@ -162,19 +168,19 @@ Exit codes: `0` success, `1` could not collect or write, `2` usage error, `3` `-
 
 ```bash
 # fail a post-deploy check if the new pods log anything high or critical
-incopilot k8s -l app=api -n prod --since 10m --fail-on high --quiet
+firstsignal k8s -l app=api -n prod --since 10m --fail-on high --quiet
 ```
 
 `systemd/` has an example service and timer for scheduled runs. A `Dockerfile` is included for piping logs through a container:
 
 ```bash
-docker build -t incopilot .
-kubectl logs deploy/api | docker run --rm -i incopilot file --path - --json --no-write
+docker build -t firstsignal .
+kubectl logs deploy/api | docker run --rm -i firstsignal file --path - --json --no-write
 ```
 
 ## Your own patterns
 
-Copy `examples/incopilot.toml` to `./incopilot.toml`:
+Copy `examples/firstsignal.toml` to `./firstsignal.toml`:
 
 ```toml
 packs = ["core", "postgres"]
@@ -194,10 +200,10 @@ The same file can replace the noise filter and add redaction rules.
 
 ```bash
 export ANTHROPIC_API_KEY=...                       # or OPENAI_API_KEY
-incopilot k8s --pod deploy/api -n prod --ai
+firstsignal k8s --pod deploy/api -n prod --ai
 
 # any OpenAI-compatible endpoint, or a local model with no key at all
-incopilot file --path app.log --ai --ai-provider ollama --ai-model llama3.1
+firstsignal file --path app.log --ai --ai-provider ollama --ai-model llama3.1
 ```
 
 - **Off by default.** Without `--ai`, nothing leaves your machine.
@@ -206,7 +212,7 @@ incopilot file --path app.log --ai --ai-provider ollama --ai-model llama3.1
 - **Log content is treated as untrusted** in the prompt, so text inside a log line cannot give the model instructions.
 - If the call fails, the rest of the report is still produced.
 
-Environment: `ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, or `INCOPILOT_AI_KEY`; `INCOPILOT_AI_PROVIDER`, `INCOPILOT_AI_MODEL`, `INCOPILOT_AI_BASE_URL`.
+Environment: `ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, or `FIRSTSIGNAL_AI_KEY`; `FIRSTSIGNAL_AI_PROVIDER`, `FIRSTSIGNAL_AI_MODEL`, `FIRSTSIGNAL_AI_BASE_URL`.
 
 Redaction is pattern-based and cannot promise to catch every secret. See [SECURITY.md](SECURITY.md).
 
@@ -222,7 +228,7 @@ cli.py ── collectors.py   journalctl / docker logs / kubectl logs / file  (r
        ── memory.py       incident fingerprints, local history, "seen before" matching
        ── reporter.py     report.md + report.json
        ── html.py         report.html: the viewer page with the report embedded
-       ── patterns.py     built-in packs      settings.py   incopilot.toml
+       ── patterns.py     built-in packs      settings.py   firstsignal.toml
 ```
 
 One runtime dependency (`rich`). Python 3.10 to 3.13.
@@ -233,24 +239,25 @@ One runtime dependency (`rich`). Python 3.10 to 3.13.
 pip install -e ".[dev]"
 pytest --cov
 ruff check .
-bandit -q -r incopilot
+bandit -q -r firstsignal
 ```
 
 See [CONTRIBUTING.md](CONTRIBUTING.md). Issues and pull requests are welcome.
 
 ## Website
 
-Live at https://incopilot.autoshiftops.com/. `site/` holds the landing page, the report viewer and a 404 page as plain HTML with no build step.
+Live at https://firstsignal.autoshiftops.com/. `site/` holds the landing page, the report viewer and a 404 page as plain HTML with no build step.
 
 - **GitHub Pages:** the `Website` workflow deploys `site/` on every push to `main` that touches `site/`. Under Settings, Pages, the source must be **GitHub Actions**; "Deploy from a branch" publishes the README instead. The custom domain is set on the same page.
-- **Social preview:** `site/og.png` (1200×630) is the card shown when the link is shared. Regenerate it if the headline changes.
+- **Social preview:** `site/og.png` (1280×640, a copy of `docs/brand/firstsignal-banner.png`) is the card shown when the link is shared. Upload the same image under the repository's Settings, Social preview.
+- **Brand:** `docs/brand/` holds the mark (`firstsignal-mark.svg`, and `firstsignal-mark-16.svg` drawn for 16px), light and dark lockups, and the banner. The mark is a small first signal that pings, followed by louder ones.
 - **Vercel or Netlify:** import the repo, set the root directory to `site`, and leave the build command empty.
 
-`site/viewer.html` and `incopilot/viewer.html` are the same file; a test keeps them identical.
+`site/viewer.html` and `firstsignal/viewer.html` are the same file; a test keeps them identical.
 
 ## Roadmap
 
-See [ROADMAP.md](ROADMAP.md) for the phases and [docs/PRODUCT_PLAN.md](docs/PRODUCT_PLAN.md) for the reasoning. Work is tracked in [issues](https://github.com/AutoShiftOps/incopilot/issues) by [milestone](https://github.com/AutoShiftOps/incopilot/milestones).
+See [ROADMAP.md](ROADMAP.md) for the phases and [docs/PRODUCT_PLAN.md](docs/PRODUCT_PLAN.md) for the reasoning. Work is tracked in [issues](https://github.com/AutoShiftOps/firstsignal/issues) by [milestone](https://github.com/AutoShiftOps/firstsignal/milestones).
 
 ## Limits
 

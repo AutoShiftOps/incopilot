@@ -2,8 +2,8 @@ import json
 
 import pytest
 
-from incopilot import ai
-from incopilot.analyzer import analyze
+from firstsignal import ai
+from firstsignal.analyzer import analyze
 
 META = {"source": "file", "target": "x.log", "since": "n/a"}
 
@@ -15,8 +15,8 @@ def analysis(core, example_log):
 
 @pytest.fixture(autouse=True)
 def clean_env(monkeypatch):
-    for var in ("ANTHROPIC_API_KEY", "OPENAI_API_KEY", "INCOPILOT_AI_KEY", "INCOPILOT_AI_PROVIDER",
-                "INCOPILOT_AI_MODEL", "INCOPILOT_AI_BASE_URL"):
+    for var in ("ANTHROPIC_API_KEY", "OPENAI_API_KEY", "FIRSTSIGNAL_AI_KEY", "FIRSTSIGNAL_AI_PROVIDER",
+                "FIRSTSIGNAL_AI_MODEL", "FIRSTSIGNAL_AI_BASE_URL"):
         monkeypatch.delenv(var, raising=False)
 
 

@@ -1,5 +1,5 @@
 name: New pattern or pack
-description: A failure incopilot should recognize, or a new pattern pack (e.g. redis, mysql).
+description: A failure firstsignal should recognize, or a new pattern pack (e.g. redis, mysql).
 labels: ["enhancement", "area: analysis"]
 body:
   - type: markdown

@@ -3,8 +3,8 @@ must match and a nearby line it must not."""
 
 import pytest
 
-from incopilot.analyzer import analyze
-from incopilot.patterns import resolve_packs
+from firstsignal.analyzer import analyze
+from firstsignal.patterns import resolve_packs
 
 CASES = [
     # redis

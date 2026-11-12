@@ -1,4 +1,4 @@
-"""Optional incopilot.toml: extra patterns, noise filters, packs and redaction rules."""
+"""Optional firstsignal.toml: extra patterns, noise filters, packs and redaction rules."""
 
 from __future__ import annotations
 
@@ -7,6 +7,7 @@ import sys
 from dataclasses import dataclass, field
 from pathlib import Path
 
+from . import _compat
 from .patterns import SEVERITY_RANK, SIGNALS, Pattern
 
 if sys.version_info >= (3, 11):
@@ -14,7 +15,7 @@ if sys.version_info >= (3, 11):
 else:  # pragma: no cover - Python 3.10 only
     import tomli as tomllib
 
-DEFAULT_FILE = "incopilot.toml"
+DEFAULT_FILE = "firstsignal.toml"
 
 
 class SettingsError(ValueError):
@@ -23,7 +24,7 @@ class SettingsError(ValueError):
 
 @dataclass
 class Settings:
-    """Values read from incopilot.toml. Everything is optional."""
+    """Values read from firstsignal.toml. Everything is optional."""
 
     packs: list[str] = field(default_factory=list)
     patterns: list[Pattern] = field(default_factory=list)
@@ -42,9 +43,9 @@ def _compile(rx: str, where: str) -> re.Pattern:
 
 
 def load(path: str | None = None) -> Settings:
-    """Load settings from `path`, or ./incopilot.toml if it exists, else defaults."""
+    """Load settings from `path`, or ./firstsignal.toml if it exists, else defaults."""
     explicit = path is not None
-    file = Path(path or DEFAULT_FILE)
+    file = Path(path) if path else _compat.prefer_existing(Path(DEFAULT_FILE), Path(f"{_compat.OLD_NAME}.toml"))
     if not file.is_file():
         if explicit:
             raise SettingsError(f"config file not found: {file}")

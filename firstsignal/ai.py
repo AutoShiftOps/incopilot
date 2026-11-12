@@ -14,6 +14,7 @@ import urllib.request
 from dataclasses import dataclass
 from urllib.parse import urlparse
 
+from . import _compat
 from .analyzer import Analysis
 
 PROVIDERS = ("anthropic", "openai", "ollama")
@@ -58,7 +59,7 @@ class AIResult:
 
 def detect_provider() -> str | None:
     """Pick a provider from the environment, if one is configured."""
-    explicit = os.environ.get("INCOPILOT_AI_PROVIDER")
+    explicit = _compat.getenv("AI_PROVIDER")
     if explicit:
         return explicit
     for name, env in _KEY_ENV.items():
@@ -119,7 +120,7 @@ def hypothesize(
 ) -> AIResult:
     """Ask the configured model for root-cause hypotheses. Never raises."""
     provider = provider or detect_provider() or ""
-    model = model or os.environ.get("INCOPILOT_AI_MODEL") or _DEFAULT_MODEL.get(provider, "")
+    model = model or _compat.getenv("AI_MODEL") or _DEFAULT_MODEL.get(provider, "")
     result = AIResult(provider or "none", model or "none")
     try:
         if provider not in PROVIDERS:
@@ -129,10 +130,10 @@ def hypothesize(
             )
         if not model:
             raise AIError(f"--ai-model is required for provider '{provider}'")
-        key = os.environ.get("INCOPILOT_AI_KEY") or os.environ.get(_KEY_ENV.get(provider, ""), "")
+        key = _compat.getenv("AI_KEY") or os.environ.get(_KEY_ENV.get(provider, ""), "")
         if provider != "ollama" and not key:
             raise AIError(f"no API key found: set {_KEY_ENV[provider]}")
-        base = (os.environ.get("INCOPILOT_AI_BASE_URL") or _DEFAULT_BASE[provider]).rstrip("/")
+        base = (_compat.getenv("AI_BASE_URL") or _DEFAULT_BASE[provider]).rstrip("/")
         prompt = build_prompt(analysis, meta)
         if provider == "anthropic":
             data = post(

@@ -18,7 +18,7 @@ jobs:
           python-version: "3.12"
       - run: pip install ruff bandit
       - run: ruff check .
-      - run: bandit -q -r incopilot
+      - run: bandit -q -r firstsignal
 
   test:
     runs-on: ubuntu-latest
@@ -34,7 +34,7 @@ jobs:
       - run: pip install -e ".[dev]"
       - run: pytest --cov
       - name: Smoke test the installed command
-        run: incopilot file --path examples/checkout-incident.log --no-write
+        run: firstsignal file --path examples/checkout-incident.log --no-write
 
   build:
     runs-on: ubuntu-latest

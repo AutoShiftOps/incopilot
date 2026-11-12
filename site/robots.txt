@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://incopilot.autoshiftops.com/sitemap.xml
+Sitemap: https://firstsignal.autoshiftops.com/sitemap.xml

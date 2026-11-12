@@ -1,7 +1,7 @@
 import pytest
 
-from incopilot import settings
-from incopilot.settings import SettingsError
+from firstsignal import settings
+from firstsignal.settings import SettingsError
 
 
 def test_defaults_when_no_file(tmp_path, monkeypatch):
@@ -16,7 +16,7 @@ def test_explicit_missing_file_is_an_error(tmp_path):
 
 
 def test_full_file(tmp_path):
-    f = tmp_path / "incopilot.toml"
+    f = tmp_path / "firstsignal.toml"
     f.write_text('''
 packs = ["core", "postgres"]
 noise = ["/metrics"]
@@ -48,10 +48,10 @@ advice = "Compare the two ledgers."
     ('[[patterns]]\nkey = "a"\nregex = "("\n', "invalid regex"),
     ('[[patterns]]\nkey = "a"\nregex = "a"\nsignal = "vibes"\n', "signal must be one of"),
     ('[[patterns]]\nkey = "a"\nregex = "a"\nseverity = "none"\n', "severity must be"),
-    ("packs = [", "incopilot.toml"),
+    ("packs = [", "firstsignal.toml"),
 ])
 def test_invalid_files(tmp_path, body, msg):
-    f = tmp_path / "incopilot.toml"
+    f = tmp_path / "firstsignal.toml"
     f.write_text(body)
     with pytest.raises(SettingsError, match=msg):
         settings.load(str(f))

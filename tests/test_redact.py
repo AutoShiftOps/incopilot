@@ -1,6 +1,6 @@
 import pytest
 
-from incopilot.redact import Redactor
+from firstsignal.redact import Redactor
 
 
 @pytest.mark.parametrize("text,secret", [

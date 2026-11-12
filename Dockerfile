@@ -2,10 +2,10 @@ FROM python:3.12-slim
 
 WORKDIR /app
 COPY pyproject.toml README.md ./
-COPY incopilot ./incopilot
-RUN pip install --no-cache-dir . && useradd --create-home --uid 10001 incopilot
+COPY firstsignal ./firstsignal
+RUN pip install --no-cache-dir . && useradd --create-home --uid 10001 firstsignal
 
-USER incopilot
+USER firstsignal
 WORKDIR /work
-ENTRYPOINT ["incopilot"]
+ENTRYPOINT ["firstsignal"]
 CMD ["--help"]

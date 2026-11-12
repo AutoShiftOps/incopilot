@@ -2,7 +2,7 @@
 
 Each pattern maps a log signature to one of the Four Golden Signals and a
 severity, and carries a short piece of read-only advice. Add your own in
-`incopilot.toml` (see README) rather than editing this file.
+`firstsignal.toml` (see README) rather than editing this file.
 """
 
 from __future__ import annotations
