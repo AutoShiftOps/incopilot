@@ -13,6 +13,7 @@ from dataclasses import asdict, dataclass, field
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
+from . import _compat
 from .analyzer import Analysis
 
 SAME_INCIDENT_WINDOW = timedelta(minutes=60)
@@ -47,9 +48,15 @@ class Match:
 
 
 def default_path() -> Path:
-    """Where history lives: $INCOPILOT_HISTORY, or ~/.incopilot/history.jsonl."""
-    env = os.environ.get("INCOPILOT_HISTORY")
-    return Path(env) if env else Path.home() / ".incopilot" / "history.jsonl"
+    """Where history lives: $FIRSTSIGNAL_HISTORY, or ~/.firstsignal/history.jsonl.
+
+    History written under the old name (~/.incopilot) keeps being used until a new file exists.
+    """
+    env = _compat.getenv("HISTORY")
+    if env:
+        return Path(env)
+    return _compat.prefer_existing(Path.home() / ".firstsignal" / "history.jsonl",
+                                   Path.home() / f".{_compat.OLD_NAME}" / "history.jsonl")
 
 
 def _now() -> datetime:

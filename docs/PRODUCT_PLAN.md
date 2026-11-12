@@ -2,13 +2,13 @@
 
 Status: working draft, revised 2026-11-11.
 
-incopilot is a free, MIT-licensed open-source project maintained in spare time. Nothing is for sale: there are no paid plans, no pilots and no sponsorship. A team edition is described below as a possible later stage. Whether it would ever be offered commercially is undecided, and would only be considered once the requirements in section 7 are met.
+firstsignal is a free, MIT-licensed open-source project maintained in spare time. Nothing is for sale: there are no paid plans, no pilots and no sponsorship. A team edition is described below as a possible later stage. Whether it would ever be offered commercially is undecided, and would only be considered once the requirements in section 7 are met.
 
 ## 1. Vision
 
 **When something breaks, an engineer should know in a minute what went wrong, in what order, and whether the team has seen it before.**
 
-incopilot is deterministic incident triage with a memory. It reads logs where they live, explains what happened with the evidence shown, and recognizes repeat incidents along with what fixed them.
+firstsignal is deterministic incident triage with a memory. It reads logs where they live, explains what happened with the evidence shown, and recognizes repeat incidents along with what fixed them.
 
 Three principles, in priority order:
 
@@ -56,7 +56,7 @@ What weakens the bet: funded vendors are moving down-market, HolmesGPT is free, 
 | Stage | What ships | Exit criteria |
 |---|---|---|
 | 1. Memory in the CLI | Fingerprints, local history, "seen before" with fix notes. Free and open source | Used in real incidents by people other than the maintainers |
-| 2. Live and accurate | `incopilot watch` for continuous local triage, stack-trace grouping, burst detection, a labeled accuracy corpus, PyPI release | Published accuracy; one-command install |
+| 2. Live and accurate | `firstsignal watch` for continuous local triage, stack-trace grouping, burst detection, a labeled accuracy corpus, PyPI release | Published accuracy; one-command install |
 | 3. Validation gate | Interviews, adoption data, teams trying it on real incidents, a written decision | See section 6 |
 | 4. Team memory | A small service that receives redacted findings pushed by the CLI (`--push <url>`) and gives the team one shared history: live findings, recurrence, what fixed it, by service | Three teams running it for 30 days |
 | 5. Team portal | Alerts on recurrence and severity, trends, roles, retention | Decided at the end of Stage 4 |
@@ -88,7 +88,7 @@ What makes the project worth sustaining: its value grows with a team's own incid
 ```mermaid
 flowchart LR
   subgraph Customer environment
-    L[Logs: journal, Docker, Kubernetes, files] --> C[incopilot CLI or watch service]
+    L[Logs: journal, Docker, Kubernetes, files] --> C[firstsignal CLI or watch service]
     C --> H[(Local history)]
     C -->|redacted findings and fingerprints| P[Push with a token]
   end

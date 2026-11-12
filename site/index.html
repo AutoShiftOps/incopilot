@@ -3,27 +3,28 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>incopilot: read-only incident triage for logs</title>
-<meta name="description" content="incopilot reads your logs during an incident and tells you what went wrong, in what order, and which safe checks to run next. systemd, Docker, Kubernetes and files. Open source, read-only, no account.">
-<link rel="canonical" href="https://incopilot.autoshiftops.com/">
+<title>firstsignal: read-only incident triage for logs</title>
+<meta name="description" content="firstsignal reads your logs during an incident and tells you what went wrong, in what order, and which safe checks to run next. systemd, Docker, Kubernetes and files. Open source, read-only, no account.">
+<link rel="canonical" href="https://firstsignal.autoshiftops.com/">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="logo.svg">
 <meta name="theme-color" content="#f2f5f7" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#0f151b" media="(prefers-color-scheme: dark)">
 <meta property="og:type" content="website">
-<meta property="og:site_name" content="incopilot">
-<meta property="og:title" content="incopilot: the loudest error is rarely the first one">
+<meta property="og:site_name" content="firstsignal">
+<meta property="og:title" content="firstsignal: the loudest error is rarely the first one">
 <meta property="og:description" content="Read-only incident triage for logs. Finds what failed, in what order, and the safe checks to run next.">
-<meta property="og:url" content="https://incopilot.autoshiftops.com/">
-<meta property="og:image" content="https://incopilot.autoshiftops.com/og.png">
-<meta property="og:image:width" content="1200">
-<meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="incopilot: an incident timeline showing slow queries appearing 24 seconds before the out-of-memory kill">
+<meta property="og:url" content="https://firstsignal.autoshiftops.com/">
+<meta property="og:image" content="https://firstsignal.autoshiftops.com/og.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="firstsignal: the loudest error is rarely the first one">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Sans+Condensed:wght@600&display=swap">
 <script type="application/ld+json">
-{"@context":"https://schema.org","@type":"SoftwareApplication","name":"incopilot","applicationCategory":"DeveloperApplication","operatingSystem":"Linux, macOS, Windows","description":"Read-only incident triage for logs: systemd, Docker, Kubernetes and files, mapped to the Four Golden Signals.","url":"https://incopilot.autoshiftops.com/","codeRepository":"https://github.com/AutoShiftOps/incopilot","license":"https://opensource.org/licenses/MIT","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}
+{"@context":"https://schema.org","@type":"SoftwareApplication","name":"firstsignal","applicationCategory":"DeveloperApplication","operatingSystem":"Linux, macOS, Windows","description":"Read-only incident triage for logs: systemd, Docker, Kubernetes and files, mapped to the Four Golden Signals.","url":"https://firstsignal.autoshiftops.com/","codeRepository":"https://github.com/AutoShiftOps/firstsignal","license":"https://opensource.org/licenses/MIT","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}
 </script>
 <style>
 /* Layout: a sticky header, then one 1040px column. The hero pairs the thesis with a to-scale
@@ -84,7 +85,7 @@ code { font-size: 0.9em; }
 .site-head.scrolled { border-bottom-color: var(--line); box-shadow: 0 6px 18px -14px rgba(0,0,0,.35); }
 .top { display: flex; align-items: center; gap: 20px; height: var(--head-h); }
 .brand { display: inline-flex; align-items: center; gap: 8px; font: 500 1.05rem var(--mono); color: var(--ink); text-decoration: none; flex: none; }
-.brand img { width: 22px; height: 22px; }
+.brand img { width: 26px; height: 26px; }
 .brand .word span { color: var(--accent); }
 .top nav { flex: 1; min-width: 0; display: flex; justify-content: flex-end; }
 .top nav ul { position: relative; list-style: none; margin: 0; padding: 0; display: flex; align-items: center; gap: 4px; overflow-x: auto; scrollbar-width: none; white-space: nowrap; }
@@ -187,7 +188,7 @@ section { padding-block: 56px; border-top: 1px solid var(--line); }
 
 <header class="site-head" id="site-head">
   <div class="wrap top">
-    <a class="brand" href="#top" aria-label="incopilot, back to top"><img src="favicon.svg" alt="" width="22" height="22"><span class="word">in<span>copilot</span></span></a>
+    <a class="brand" href="#top" aria-label="firstsignal, back to top"><img src="logo.svg" alt="" width="26" height="26"><span class="word"><span>first</span>signal</span></a>
     <nav aria-label="Site">
       <ul>
         <li><a href="#sources">Sources</a></li>
@@ -196,7 +197,7 @@ section { padding-block: 56px; border-top: 1px solid var(--line); }
         <li><a href="#report">Report</a></li>
         <li><a href="#ai">AI</a></li>
         <li><a href="viewer.html">Example</a></li>
-        <li><a class="gh" href="https://github.com/AutoShiftOps/incopilot" aria-label="incopilot on GitHub"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg><span>GitHub</span></a></li>
+        <li><a class="gh" href="https://github.com/AutoShiftOps/firstsignal" aria-label="firstsignal on GitHub"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg><span>GitHub</span></a></li>
       </ul>
     </nav>
   </div>
@@ -208,13 +209,13 @@ section { padding-block: 56px; border-top: 1px solid var(--line); }
       <div class="hero-copy">
         <span class="label">Open source · MIT · read-only</span>
         <h1>The loudest error is rarely the first one.</h1>
-        <p class="lede">incopilot reads your logs during an incident and tells you what went wrong, in what order, and which safe checks to run next. It remembers past incidents, so a repeat comes with what fixed it last time.</p>
+        <p class="lede">firstsignal reads your logs during an incident and tells you what went wrong, in what order, and which safe checks to run next. It remembers past incidents, so a repeat comes with what fixed it last time.</p>
         <div class="install">
-          <code id="install-cmd">pip install git+https://github.com/AutoShiftOps/incopilot</code>
+          <code id="install-cmd">pip install git+https://github.com/AutoShiftOps/firstsignal</code>
           <button class="copy" type="button" id="copy-install" data-copy="install-cmd" aria-label="Copy install command">Copy</button>
         </div>
         <div class="cta">
-          <a class="btn" href="https://github.com/AutoShiftOps/incopilot">View on GitHub</a>
+          <a class="btn" href="https://github.com/AutoShiftOps/firstsignal">View on GitHub</a>
           <a href="viewer.html">See an example report</a>
         </div>
         <ul class="chips" aria-label="Works with">
@@ -263,20 +264,20 @@ section { padding-block: 56px; border-top: 1px solid var(--line); }
             <button type="button" role="tab" id="tab-bundle" aria-controls="p-bundle" aria-selected="false" tabindex="-1">Bundle</button>
           </div>
           <div class="term" role="tabpanel" id="p-k8s" aria-labelledby="tab-k8s"><pre><span class="c"># a workload, a pod, or a label selector</span>
-incopilot k8s --pod deploy/api -n prod --since 30m
+firstsignal k8s --pod deploy/api -n prod --since 30m
 
 <span class="c"># the container that just crashed</span>
-incopilot k8s -l app=api -n prod --previous</pre></div>
+firstsignal k8s -l app=api -n prod --previous</pre></div>
           <div class="term" role="tabpanel" id="p-docker" aria-labelledby="tab-docker" hidden><pre><span class="c"># stdout and stderr, with timestamps</span>
-incopilot docker --container my-api --since 1h</pre></div>
-          <div class="term" role="tabpanel" id="p-journal" aria-labelledby="tab-journal" hidden><pre>incopilot journal --unit nginx --since "30 min ago" --packs core,nginx</pre></div>
-          <div class="term" role="tabpanel" id="p-file" aria-labelledby="tab-file" hidden><pre>incopilot file --path /var/log/app.log
-incopilot file --path archive.log.gz
+firstsignal docker --container my-api --since 1h</pre></div>
+          <div class="term" role="tabpanel" id="p-journal" aria-labelledby="tab-journal" hidden><pre>firstsignal journal --unit nginx --since "30 min ago" --packs core,nginx</pre></div>
+          <div class="term" role="tabpanel" id="p-file" aria-labelledby="tab-file" hidden><pre>firstsignal file --path /var/log/app.log
+firstsignal file --path archive.log.gz
 
 <span class="c"># or pipe anything in</span>
-kubectl logs deploy/api | incopilot file --path -</pre></div>
+kubectl logs deploy/api | firstsignal file --path -</pre></div>
           <div class="term" role="tabpanel" id="p-bundle" aria-labelledby="tab-bundle" hidden><pre><span class="c"># proxy, app and pod as one timeline</span>
-incopilot bundle --unit nginx --container my-api \
+firstsignal bundle --unit nginx --container my-api \
   --pod deploy/api -n prod</pre></div>
         </div>
       </div>
@@ -286,7 +287,7 @@ incopilot bundle --unit nginx --container my-api \
       <div class="row">
         <div>
           <h2 id="h-memory">It remembers what fixed it last time</h2>
-          <p>Every run with findings is kept as a fingerprint: which patterns fired, in what order, on which target. When something similar happens again, incopilot says so, with the fix you noted.</p>
+          <p>Every run with findings is kept as a fingerprint: which patterns fired, in what order, on which target. When something similar happens again, firstsignal says so, with the fix you noted.</p>
           <ul class="points">
             <li><b>Local and private.</b> One file in your home directory, readable only by you.</li>
             <li><b>No log text stored.</b> Pattern names, counts, target, time and your note.</li>
@@ -294,7 +295,7 @@ incopilot bundle --unit nginx --container my-api \
           </ul>
         </div>
         <div class="panel-stack">
-          <div class="term" aria-label="Example terminal output"><div class="bar" aria-hidden="true"><i></i><i></i><i></i></div><pre><span class="p">$</span> incopilot k8s --pod deploy/api -n prod
+          <div class="term" aria-label="Example terminal output"><div class="bar" aria-hidden="true"><i></i><i></i><i></i></div><pre><span class="p">$</span> firstsignal k8s --pod deploy/api -n prod
 <span class="c">…</span>
 <b>Seen before</b>
   3f9a1c2e  12 days ago on prod/deploy/api  <span class="k-crit">(100% similar, critical)</span>
@@ -302,9 +303,9 @@ incopilot bundle --unit nginx --container my-api \
       added index on orders.customer_id
 
 <span class="c">Remembered as 8b21d0aa. When it is fixed:</span>
-<span class="p">$</span> incopilot history note 8b21d0aa "what fixed it"</pre></div>
-          <div class="term"><pre><span class="p">$</span> incopilot history list      <span class="c"># what is remembered</span>
-<span class="p">$</span> incopilot history forget 8b21d0aa</pre></div>
+<span class="p">$</span> firstsignal history note 8b21d0aa "what fixed it"</pre></div>
+          <div class="term"><pre><span class="p">$</span> firstsignal history list      <span class="c"># what is remembered</span>
+<span class="p">$</span> firstsignal history forget 8b21d0aa</pre></div>
         </div>
       </div>
     </section>
@@ -317,7 +318,7 @@ incopilot bundle --unit nginx --container my-api \
           <p>When you stop it, it writes the usual reports for the worst moment it saw and keeps one history record for the whole session. Run it as a systemd service or a sidecar to keep it going.</p>
         </div>
         <div class="panel-stack">
-          <div class="term" aria-label="Example watch output"><div class="bar" aria-hidden="true"><i></i><i></i><i></i></div><pre><span class="p">$</span> incopilot watch k8s --pod deploy/api -n prod
+          <div class="term" aria-label="Example watch output"><div class="bar" aria-hidden="true"><i></i><i></i><i></i></div><pre><span class="p">$</span> firstsignal watch k8s --pod deploy/api -n prod
 <span class="c">Watching prod/deploy/api: last 5 min, checked every 15s. Ctrl+C to stop.</span>
 09:41:12  NEW          <span class="k-high">high    </span> Connection limit reached x2
 09:41:12  SEVERITY     none -> <span class="k-high">high</span>
@@ -326,8 +327,8 @@ incopilot bundle --unit nginx --container my-api \
 09:41:31  SEEN BEFORE  3f9a1c2e, 12 days ago (80% similar)
                        <span class="k-ok">Fix noted:</span> raised DB pool size
 09:52:40  CLEARED      Connection limit reached</pre></div>
-          <div class="term"><pre><span class="p">$</span> incopilot watch file --path /var/log/app.log --window 10
-<span class="p">$</span> incopilot watch docker --container my-api --json | jq .</pre></div>
+          <div class="term"><pre><span class="p">$</span> firstsignal watch file --path /var/log/app.log --window 10
+<span class="p">$</span> firstsignal watch docker --container my-api --json | jq .</pre></div>
         </div>
       </div>
     </section>
@@ -344,7 +345,7 @@ incopilot bundle --unit nginx --container my-api \
           <div><dt>Severity you can gate on</dt><dd><code>--fail-on high</code> exits 3, so a post-deploy check or a timer can act on the result.</dd></div>
           <div><dt>Checks filled in for you</dt><dd>Read-only commands with your unit, container or pod already in place. Printed, never run.</dd></div>
           <div><dt>Secrets masked by default</dt><dd>Passwords, tokens, keys, URL credentials and emails are redacted before anything is written.</dd></div>
-          <div><dt>Ten pattern packs</dt><dd>nginx, PostgreSQL, MySQL, Redis, Kafka, HAProxy, Node.js, Kubernetes and the JVM, plus your own rules in <code>incopilot.toml</code>.</dd></div>
+          <div><dt>Ten pattern packs</dt><dd>nginx, PostgreSQL, MySQL, Redis, Kafka, HAProxy, Node.js, Kubernetes and the JVM, plus your own rules in <code>firstsignal.toml</code>.</dd></div>
           <div><dt>Works offline</dt><dd>No account, no agent, and no network calls unless you pass <code>--ai</code>. One runtime dependency, Python 3.10 to 3.13.</dd></div>
           <div><dt>Fits in CI</dt><dd>JSON output and exit codes make it a post-deploy smoke check: fail the job when a deploy starts throwing errors.</dd></div>
         </dl>
@@ -380,10 +381,10 @@ incopilot bundle --unit nginx --container my-api \
             </div>
           </div>
           <div class="term"><pre>export ANTHROPIC_API_KEY=...
-incopilot k8s --pod deploy/api -n prod --ai
+firstsignal k8s --pod deploy/api -n prod --ai
 
 <span class="c"># fully local, no key</span>
-incopilot file --path app.log --ai \
+firstsignal file --path app.log --ai \
   --ai-provider ollama --ai-model llama3.1</pre></div>
         </div>
       </div>
@@ -407,13 +408,13 @@ incopilot file --path app.log --ai \
   </main>
 
   <footer class="site-foot">
-    <span>incopilot is MIT licensed and built in the open by <a href="https://autoshiftops.com/">AutoShiftOps</a>.</span>
+    <span>firstsignal is MIT licensed and built in the open by <a href="https://autoshiftops.com/">AutoShiftOps</a>.</span>
     <nav aria-label="Project">
       <a href="viewer.html">Example report</a>
-      <a href="https://github.com/AutoShiftOps/incopilot/blob/main/ROADMAP.md">Roadmap</a>
-      <a href="https://github.com/AutoShiftOps/incopilot/blob/main/CONTRIBUTING.md">Contributing</a>
-      <a href="https://github.com/AutoShiftOps/incopilot/blob/main/SECURITY.md">Security</a>
-      <a href="https://github.com/AutoShiftOps/incopilot/blob/main/CHANGELOG.md">Changelog</a>
+      <a href="https://github.com/AutoShiftOps/firstsignal/blob/main/ROADMAP.md">Roadmap</a>
+      <a href="https://github.com/AutoShiftOps/firstsignal/blob/main/CONTRIBUTING.md">Contributing</a>
+      <a href="https://github.com/AutoShiftOps/firstsignal/blob/main/SECURITY.md">Security</a>
+      <a href="https://github.com/AutoShiftOps/firstsignal/blob/main/CHANGELOG.md">Changelog</a>
     </nav>
   </footer>
 </div>

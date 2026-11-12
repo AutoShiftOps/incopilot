@@ -1,4 +1,4 @@
-from incopilot.parsing import normalize_level, parse_line
+from firstsignal.parsing import normalize_level, parse_line
 
 
 def test_plain_line_level_and_timestamp():

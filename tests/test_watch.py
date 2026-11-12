@@ -3,11 +3,11 @@ from datetime import datetime, timedelta, timezone
 
 import pytest
 
-from incopilot import cli, collectors, memory
-from incopilot.analyzer import analyze
-from incopilot.collectors import CollectorError
-from incopilot.redact import Redactor
-from incopilot.watch import FileFollower, Watcher, diff
+from firstsignal import cli, collectors, memory
+from firstsignal.analyzer import analyze
+from firstsignal.collectors import CollectorError
+from firstsignal.redact import Redactor
+from firstsignal.watch import FileFollower, Watcher, diff
 
 
 class Clock:

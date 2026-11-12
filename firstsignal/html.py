@@ -19,7 +19,7 @@ def _safe_json(obj) -> str:
 
 def render_html(report: dict) -> str:
     """Return the viewer page with `report` embedded and the bundled example removed."""
-    page = resources.files("incopilot").joinpath("viewer.html").read_text(encoding="utf-8")
+    page = resources.files("firstsignal").joinpath("viewer.html").read_text(encoding="utf-8")
     if _DATA_SLOT not in page or _SAMPLE_OPEN not in page:
         raise RuntimeError("viewer.html is missing its data slots")
     start = page.index(_SAMPLE_OPEN) + len(_SAMPLE_OPEN)

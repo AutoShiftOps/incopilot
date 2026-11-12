@@ -1,18 +1,18 @@
 name: Bug report
-description: incopilot crashed, missed an obvious failure, or flagged something it shouldn't have.
+description: firstsignal crashed, missed an obvious failure, or flagged something it shouldn't have.
 labels: ["bug"]
 body:
   - type: markdown
     attributes:
       value: |
-        Thanks for taking the time. **Please redact secrets before pasting logs** — incopilot masks them in its reports, but this form doesn't.
-        Security issues go through [SECURITY.md](https://github.com/AutoShiftOps/incopilot/blob/main/SECURITY.md), not here.
+        Thanks for taking the time. **Please redact secrets before pasting logs** — firstsignal masks them in its reports, but this form doesn't.
+        Security issues go through [SECURITY.md](https://github.com/AutoShiftOps/firstsignal/blob/main/SECURITY.md), not here.
   - type: input
     id: version
     attributes:
-      label: incopilot version
-      description: Output of `incopilot --version`
-      placeholder: incopilot 0.2.0
+      label: firstsignal version
+      description: Output of `firstsignal --version`
+      placeholder: firstsignal 0.2.0
     validations:
       required: true
   - type: dropdown
@@ -26,7 +26,7 @@ body:
     id: command
     attributes:
       label: Command you ran
-      placeholder: incopilot file --path app.log --packs core,nginx
+      placeholder: firstsignal file --path app.log --packs core,nginx
     validations:
       required: true
   - type: dropdown

@@ -1,13 +1,14 @@
 [build-system]
-requires = ["setuptools>=68"]
+requires = ["setuptools>=77"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "incopilot"
+name = "firstsignal"
 dynamic = ["version"]
 description = "Read-only incident triage for logs: journalctl, Docker, Kubernetes and files, mapped to the Four Golden Signals."
 readme = "README.md"
-license = { text = "MIT" }
+license = "MIT"
+license-files = ["LICENSE"]
 requires-python = ">=3.10"
 authors = [{ name = "AutoShiftOps" }]
 keywords = ["incident-response", "sre", "logs", "triage", "observability", "kubernetes"]
@@ -15,8 +16,11 @@ classifiers = [
     "Development Status :: 4 - Beta",
     "Environment :: Console",
     "Intended Audience :: System Administrators",
-    "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "Topic :: System :: Logging",
     "Topic :: System :: Monitoring",
 ]
@@ -29,28 +33,29 @@ dependencies = [
 dev = ["pytest>=7.4", "pytest-cov>=4.1", "ruff>=0.6", "bandit>=1.7", "build>=1.0"]
 
 [project.urls]
-Homepage = "https://incopilot.autoshiftops.com/"
-Repository = "https://github.com/AutoShiftOps/incopilot"
-Issues = "https://github.com/AutoShiftOps/incopilot/issues"
+Homepage = "https://firstsignal.autoshiftops.com/"
+Repository = "https://github.com/AutoShiftOps/firstsignal"
+Issues = "https://github.com/AutoShiftOps/firstsignal/issues"
 
 [project.scripts]
-incopilot = "incopilot.cli:main"
+firstsignal = "firstsignal.cli:main"
+incopilot = "firstsignal.cli:main"  # former name, kept for one release
 
 [tool.setuptools]
-packages = ["incopilot"]
+packages = ["firstsignal"]
 
 [tool.setuptools.package-data]
-incopilot = ["viewer.html"]
+firstsignal = ["viewer.html"]
 
 [tool.setuptools.dynamic]
-version = { attr = "incopilot.__version__" }
+version = { attr = "firstsignal.__version__" }
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "-q"
 
 [tool.coverage.run]
-source = ["incopilot"]
+source = ["firstsignal"]
 
 [tool.coverage.report]
 fail_under = 85
@@ -66,5 +71,5 @@ ignore = ["S101"]
 
 [tool.ruff.lint.per-file-ignores]
 "tests/*" = ["S", "B", "E501"]
-"incopilot/collectors.py" = ["S404", "S603"]
-"incopilot/patterns.py" = ["E501"]
+"firstsignal/collectors.py" = ["S404", "S603"]
+"firstsignal/patterns.py" = ["E501"]

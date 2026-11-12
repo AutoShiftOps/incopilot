@@ -3,8 +3,8 @@ import os
 import stat
 from datetime import datetime, timedelta, timezone
 
-from incopilot import cli, memory
-from incopilot.analyzer import analyze
+from firstsignal import cli, memory
+from firstsignal.analyzer import analyze
 
 T0 = datetime(2026, 3, 1, 9, 45, tzinfo=timezone.utc)
 POOL = "WARN slow query took longer than 2s\nERROR connection pool exhausted\nERROR request timed out\n"

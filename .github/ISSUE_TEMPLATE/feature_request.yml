@@ -5,13 +5,13 @@ body:
   - type: markdown
     attributes:
       value: |
-        incopilot is read-only by design: it correlates and explains, it never restarts, deletes, or changes anything.
-        Requests to auto-remediate will be closed — see [ROADMAP.md](https://github.com/AutoShiftOps/incopilot/blob/main/ROADMAP.md) ("Not planned").
+        firstsignal is read-only by design: it correlates and explains, it never restarts, deletes, or changes anything.
+        Requests to auto-remediate will be closed — see [ROADMAP.md](https://github.com/AutoShiftOps/firstsignal/blob/main/ROADMAP.md) ("Not planned").
   - type: textarea
     id: problem
     attributes:
       label: The problem
-      description: What were you trying to do during an incident, and where did incopilot fall short?
+      description: What were you trying to do during an incident, and where did firstsignal fall short?
     validations:
       required: true
   - type: textarea

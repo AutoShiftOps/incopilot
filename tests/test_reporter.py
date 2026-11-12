@@ -1,6 +1,6 @@
-from incopilot.ai import AIResult
-from incopilot.analyzer import analyze
-from incopilot.reporter import (
+from firstsignal.ai import AIResult
+from firstsignal.analyzer import analyze
+from firstsignal.reporter import (
     SCHEMA_VERSION,
     build_meta,
     build_report_json,

@@ -4,7 +4,7 @@
 
 **Please do NOT open public GitHub issues for security vulnerabilities.**
 
-If you discover a security vulnerability in incopilot, please report it responsibly by emailing:
+If you discover a security vulnerability in firstsignal, please report it responsibly by emailing:
 
 📧 **security@autoshiftops.com**
 
@@ -16,7 +16,7 @@ Include the following information:
 
 ## Security Considerations
 
-### What incopilot does
+### What firstsignal does
 - Reads logs through `journalctl`, `docker logs`, `kubectl logs`, or a file you name
 - Runs those tools with a fixed argument list and no shell; values that look like options are rejected
 - Masks secrets (passwords, tokens, keys, credentials in URLs, emails) in every report by default
@@ -29,7 +29,7 @@ Include the following information:
 - To the provider you configure with your own key, over HTTPS (plain HTTP is accepted for localhost only, for local models)
 - Redaction is pattern-based and cannot guarantee that every secret is caught. Review what your logs contain before enabling `--ai`
 
-### What incopilot does not do
+### What firstsignal does not do
 - Change anything: no restarts, deletes, scaling or config edits. Suggested commands are read-only and are printed, never run
 - Execute or act on anything a model returns
 - Store credentials. API keys are read from environment variables only

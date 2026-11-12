@@ -1,16 +1,16 @@
 [Unit]
-Description=incopilot scheduled log triage (read-only)
+Description=firstsignal scheduled log triage (read-only)
 After=network.target
 
 [Service]
 Type=oneshot
 User=YOUR_USER
-ExecStart=/opt/incopilot/.venv/bin/incopilot bundle \
+ExecStart=/opt/firstsignal/.venv/bin/firstsignal bundle \
   --unit nginx \
   --container my-api \
   --since-journal "10 min ago" \
   --since-docker 10m \
-  --out-dir /var/log/incopilot \
+  --out-dir /var/log/firstsignal \
   --quiet
 # Exit code 3 means the --fail-on threshold was met, which is not a unit failure.
 SuccessExitStatus=3

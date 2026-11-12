@@ -2,9 +2,9 @@ import re
 
 import pytest
 
-from incopilot.analyzer import analyze, normalize_line
-from incopilot.patterns import PACKS, SEVERITY_RANK, SIGNALS, Pattern, resolve_packs
-from incopilot.redact import Redactor
+from firstsignal.analyzer import analyze, normalize_line
+from firstsignal.patterns import PACKS, SEVERITY_RANK, SIGNALS, Pattern, resolve_packs
+from firstsignal.redact import Redactor
 
 
 @pytest.mark.parametrize("line,key", [

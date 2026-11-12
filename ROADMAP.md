@@ -1,8 +1,8 @@
 # Roadmap
 
-incopilot is an open-source, read-only incident triage CLI. It is free and MIT licensed, and nothing here is for sale. This roadmap covers the CLI and a possible team edition later. The reasoning behind it is in [docs/PRODUCT_PLAN.md](docs/PRODUCT_PLAN.md).
+firstsignal is an open-source, read-only incident triage CLI. It is free and MIT licensed, and nothing here is for sale. This roadmap covers the CLI and a possible team edition later. The reasoning behind it is in [docs/PRODUCT_PLAN.md](docs/PRODUCT_PLAN.md).
 
-Work is tracked in [GitHub issues](https://github.com/AutoShiftOps/incopilot/issues), grouped by [milestone](https://github.com/AutoShiftOps/incopilot/milestones). Priorities: **P0** must ship for the milestone, **P1** should ship, **P2** if time allows.
+Work is tracked in [GitHub issues](https://github.com/AutoShiftOps/firstsignal/issues), grouped by [milestone](https://github.com/AutoShiftOps/firstsignal/milestones). Priorities: **P0** must ship for the milestone, **P1** should ship, **P2** if time allows.
 
 No dates are promised. Stages 4 and 5 only start if Stage 3 says go.
 
@@ -15,7 +15,7 @@ No dates are promised. Stages 4 and 5 only start if Stage 3 says go.
 | 4 | v0.5 Team memory (alpha) | One shared incident history, fed by findings pushed from the CLI | Conditional on Stage 3 |
 | 5 | v1.0 Team portal | Recurrence alerts, trends, roles | Conditional on Stage 4 |
 
-**Direction:** deterministic incident triage with a memory. Logs stay where they are; only redacted findings ever leave the machine. incopilot will not become a log platform or ship a collection agent.
+**Direction:** deterministic incident triage with a memory. Logs stay where they are; only redacted findings ever leave the machine. firstsignal will not become a log platform or ship a collection agent.
 
 ## Phase 0: v0.2 Stabilize and ship
 
@@ -23,15 +23,15 @@ Shipped: incident memory ("seen before" with fix notes), Kubernetes source, stru
 
 Remaining: publish to PyPI, tag the release, turn on GitHub Pages, and test the collectors against real journalctl, Docker and a Kubernetes cluster.
 
-**Done when:** `pip install incopilot` works, CI exercises real collectors, and the site is live.
+**Done when:** `pip install firstsignal` works, CI exercises real collectors, and the site is live.
 
 ## Phase 1: v0.3 Sharper triage
 
-- `incopilot watch`: continuous local triage that reports only what changed (shipped)
+- `firstsignal watch`: continuous local triage that reports only what changed (shipped)
 - Group multi-line stack traces into one event
 - Burst detection: when the error rate jumped, not only what appeared
 - Per-source timelines in `bundle`, to show which component failed first
-- `incopilot diff` to compare a run against a known-good baseline
+- `firstsignal diff` to compare a run against a known-good baseline
 - Kubernetes events and pod status as a source
 - A regression corpus of real log samples to keep false positives down
 
@@ -44,7 +44,7 @@ Remaining: publish to PyPI, tag the release, turn on GitHub Pages, and test the 
 - Read-only collectors for Loki and CloudWatch Logs
 - Container image and one-line installs
 
-**Done when:** a team can run incopilot in a pipeline and get the result in their channel without writing glue code.
+**Done when:** a team can run firstsignal in a pipeline and get the result in their channel without writing glue code.
 
 ## Phase 3: Validation gate
 
@@ -55,7 +55,7 @@ This phase is evidence, not code. It answers the two open questions in the produ
 - A handful of teams trying it on real incidents and reporting back
 - A written go or no-go decision
 
-**Go if** the criteria in the product plan are met. **Otherwise** incopilot stays a maintained open-source CLI, which is a fine outcome.
+**Go if** the criteria in the product plan are met. **Otherwise** firstsignal stays a maintained open-source CLI, which is a fine outcome.
 
 Whether a team edition would ever be offered commercially is undecided and is not part of this roadmap.
 
@@ -69,7 +69,7 @@ Alerts on recurrence and severity, trends over time, teams and roles, an audit l
 
 ## Not planned
 
-- Automatic remediation of any kind. incopilot explains; people act.
+- Automatic remediation of any kind. firstsignal explains; people act.
 - Raw log ingestion, storage or search.
 - A separate collection agent. Later, the same CLI can run as a service.
 - Replacing a log store, a metrics system or an on-call scheduler.
