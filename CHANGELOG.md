@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.1] - 2026-11-12
+
 ### Fixed
 - Log files with Windows (CRLF) line endings: `file` and `watch` no longer keep a stray `\r` at the end of each line
 
