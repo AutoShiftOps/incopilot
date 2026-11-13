@@ -56,6 +56,8 @@ class FileFollower:
             lines.append(self.partial)
             self.partial = b""
         for line in lines:
+            if line.endswith(b"\r"):  # CRLF line endings (Windows)
+                line = line[:-1]
             self.buf.append((now, line.decode("utf-8", errors="replace")))
         while self.buf and now - self.buf[0][0] > self.window:
             self.buf.popleft()

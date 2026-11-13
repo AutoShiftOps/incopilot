@@ -121,7 +121,8 @@ def from_file(path: str, max_bytes: int = DEFAULT_MAX_BYTES) -> str:
             if max_bytes > 0 and size > max_bytes:
                 fh.seek(size - max_bytes)
                 fh.readline()  # drop the partial first line
-            return fh.read().decode("utf-8", errors="replace")
+            # Windows logs end lines with CRLF; normalize so every source looks the same.
+            return fh.read().decode("utf-8", errors="replace").replace("\r\n", "\n")
     except OSError as exc:
         raise CollectorError(f"cannot read {path}: {exc.strerror or exc}") from exc
 

@@ -125,3 +125,9 @@ def test_tail_bytes_cuts_on_line_boundary():
 
 def test_join_sources():
     assert collectors.join_sources([("a", "x\n"), ("b", "y")]) == "=== SOURCE: a ===\nx\n\n=== SOURCE: b ===\ny\n\n"
+
+
+def test_file_with_crlf_line_endings(tmp_path):
+    f = tmp_path / "win.log"
+    f.write_bytes(b"ERROR one\r\nERROR two\r\n")
+    assert collectors.from_file(str(f)) == "ERROR one\nERROR two\n"
